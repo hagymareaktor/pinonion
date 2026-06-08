@@ -357,7 +357,6 @@ function purepin_rv_save_prefs( WP_REST_Request $req ) {
     $uid     = get_current_user_id();
     $allowed = [ 'activeTab', 'filterImportant', 'filterUnread', 'filterNew', 'scopeFilter', 'sortBy', 'panelOpen' ];
     $body    = $req->get_json_params();
-    $body    = is_array( $body ) ? $body : [];
     $prefs   = [];
     foreach ( $allowed as $key ) {
         if ( array_key_exists( $key, $body ) ) {
