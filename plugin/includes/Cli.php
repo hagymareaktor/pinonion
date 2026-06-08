@@ -1,7 +1,7 @@
 <?php
 /**
- * PurePin Review – WP-CLI parancsok
- * Használat: wp purepin <parancs> [opciók]
+ * PurePin Review – WP-CLI commands
+ * Usage: wp purepin <command> [options]
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -12,21 +12,21 @@ WP_CLI::add_command( 'purepin', 'PurePin_CLI' );
 class PurePin_CLI {
 
     /**
-     * Pinek listázása.
+     * List pins.
      *
      * ## OPTIONS
      *
      * [--status=<status>]
-     * : Szűrés státuszra: open, in_progress, done, all (alapértelmezett: all)
+     * : Filter by status: open, in_progress, done, all (default: all)
      *
      * [--url=<url>]
-     * : Szűrés oldal URL-re (részleges egyezés is működik)
+     * : Filter by page URL (partial match works too)
      *
      * [--important]
-     * : Csak fontos pinek
+     * : Only important pins
      *
      * [--format=<format>]
-     * : Kimenet formátuma: table, json, csv (alapértelmezett: table)
+     * : Output format: table, json, csv (default: table)
      *
      * ## EXAMPLES
      *
@@ -38,8 +38,8 @@ class PurePin_CLI {
      */
     public function list( $args, $assoc ) {
         global $wpdb;
-        $pt = $wpdb->prefix . 'kgb_pins';
-        $ct = $wpdb->prefix . 'kgb_pin_comments';
+        $pt = $wpdb->prefix . 'purepin_pins';
+        $ct = $wpdb->prefix . 'purepin_pin_comments';
 
         $where   = 'WHERE 1=1';
         $status  = $assoc['status'] ?? 'all';
@@ -70,7 +70,7 @@ class PurePin_CLI {
         // phpcs:enable
 
         if ( empty( $rows ) ) {
-            WP_CLI::line( 'Nincs találat.' );
+            WP_CLI::line( 'No matches found.' );
             return;
         }
 
@@ -78,23 +78,23 @@ class PurePin_CLI {
         $data   = array_map( function( $r ) {
             return [
                 'ID'        => $r->id,
-                'Oldal'     => $r->page_title ?: '–',
-                'Szerző'    => $r->author_name,
-                'Státusz'   => $r->status,
-                'Fontos'    => $r->important ? '⭐' : '',
-                'Komment'   => $r->comments,
-                'Olvasatlan'=> $r->unread ?: 0,
-                'Dátum'     => $r->created_at,
+                'Page'      => $r->page_title ?: '–',
+                'Author'    => $r->author_name,
+                'Status'    => $r->status,
+                'Important' => $r->important ? '❗' : '',
+                'Comments'  => $r->comments,
+                'Unread'    => $r->unread ?: 0,
+                'Date'      => $r->created_at,
             ];
         }, $rows );
 
         WP_CLI\Utils\format_items( $format, $data,
-            [ 'ID', 'Oldal', 'Szerző', 'Státusz', 'Fontos', 'Komment', 'Olvasatlan', 'Dátum' ]
+            [ 'ID', 'Page', 'Author', 'Status', 'Important', 'Comments', 'Unread', 'Date' ]
         );
     }
 
     /**
-     * Összefoglaló az összes pinről.
+     * Summary of all pins.
      *
      * ## EXAMPLES
      *
@@ -104,8 +104,8 @@ class PurePin_CLI {
      */
     public function summary( $args, $assoc ) {
         global $wpdb;
-        $pt = $wpdb->prefix . 'kgb_pins';
-        $ct = $wpdb->prefix . 'kgb_pin_comments';
+        $pt = $wpdb->prefix . 'purepin_pins';
+        $ct = $wpdb->prefix . 'purepin_pin_comments';
 
         $totals = $wpdb->get_row(
             "SELECT
@@ -130,20 +130,20 @@ class PurePin_CLI {
         );
 
         WP_CLI::line( '' );
-        WP_CLI::line( '📌 PurePin Review — összefoglaló' );
+        WP_CLI::line( '📌 PurePin Review — summary' );
         WP_CLI::line( str_repeat( '─', 40 ) );
-        WP_CLI::line( sprintf( '  Összes pin:      %d', $totals->total ) );
-        WP_CLI::line( sprintf( '  Nyitott:         %d', $totals->open ) );
-        WP_CLI::line( sprintf( '  Folyamatban:     %d', $totals->in_progress ) );
-        WP_CLI::line( sprintf( '  Lezárt:          %d', $totals->done ) );
-        WP_CLI::line( sprintf( '  Fontos:          %d', $totals->important ) );
-        WP_CLI::line( sprintf( '  Olvasatlan kom.: %d', $unread ) );
+        WP_CLI::line( sprintf( '  Total pins:      %d', $totals->total ) );
+        WP_CLI::line( sprintf( '  Open:            %d', $totals->open ) );
+        WP_CLI::line( sprintf( '  In progress:     %d', $totals->in_progress ) );
+        WP_CLI::line( sprintf( '  Done:            %d', $totals->done ) );
+        WP_CLI::line( sprintf( '  Important:       %d', $totals->important ) );
+        WP_CLI::line( sprintf( '  Unread comments: %d', $unread ) );
         WP_CLI::line( '' );
 
         if ( $pages ) {
-            WP_CLI::line( '  Oldalak:' );
+            WP_CLI::line( '  Pages:' );
             foreach ( $pages as $p ) {
-                $open = $p->open_pins > 0 ? " ({$p->open_pins} nyitott)" : ' (mind kész)';
+                $open = $p->open_pins > 0 ? " ({$p->open_pins} open)" : ' (all done)';
                 WP_CLI::line( sprintf( '    %-30s  %d pin%s',
                     mb_substr( $p->page_title ?: '–', 0, 30 ), $p->pins, $open ) );
             }
@@ -152,12 +152,12 @@ class PurePin_CLI {
     }
 
     /**
-     * Egy pin kommentjeinek listázása.
+     * List comments of a pin.
      *
      * ## OPTIONS
      *
      * <pin_id>
-     * : A pin azonosítója
+     * : The ID of the pin
      *
      * ## EXAMPLES
      *
@@ -168,30 +168,30 @@ class PurePin_CLI {
     public function comments( $args, $assoc ) {
         global $wpdb;
         if ( empty( $args[0] ) ) {
-            WP_CLI::error( 'Add meg a pin ID-ját: wp purepin comments <id>' );
+            WP_CLI::error( 'Provide the pin ID: wp purepin comments <id>' );
         }
         $pin_id = (int) $args[0];
 
         $pin = $wpdb->get_row( $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}kgb_pins WHERE id = %d", $pin_id
+            "SELECT * FROM {$wpdb->prefix}purepin_pins WHERE id = %d", $pin_id
         ) );
         if ( ! $pin ) {
-            WP_CLI::error( "Nem található pin #$pin_id" );
+            WP_CLI::error( "Pin #$pin_id not found" );
         }
 
         $rows = $wpdb->get_results( $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}kgb_pin_comments WHERE pin_id = %d ORDER BY created_at ASC",
+            "SELECT * FROM {$wpdb->prefix}purepin_pin_comments WHERE pin_id = %d ORDER BY created_at ASC",
             $pin_id
         ) );
 
         WP_CLI::line( '' );
         WP_CLI::line( "📌 Pin #{$pin_id} — {$pin->page_title}" );
-        WP_CLI::line( "   Státusz: {$pin->status}" . ( $pin->important ? ' ⭐' : '' ) );
+        WP_CLI::line( "   Status: {$pin->status}" . ( $pin->important ? ' ❗' : '' ) );
         WP_CLI::line( str_repeat( '─', 50 ) );
 
         foreach ( $rows as $c ) {
-            $prefix = $c->type === 'event' ? '  [esemény]' : '  ' . $c->author_name;
-            $read   = ( $c->type === 'comment' && ! $c->is_read ) ? ' [olvasatlan]' : '';
+            $prefix = $c->type === 'event' ? '  [event]' : '  ' . $c->author_name;
+            $read   = ( $c->type === 'comment' && ! $c->is_read ) ? ' [unread]' : '';
             WP_CLI::line( sprintf( '%s  %s%s', $prefix, $c->created_at, $read ) );
             if ( $c->type === 'comment' ) {
                 WP_CLI::line( '  ' . $c->content );
@@ -203,30 +203,30 @@ class PurePin_CLI {
     }
 
     /**
-     * Komment hozzáadása egy pinhez.
+     * Add a comment to a pin.
      *
      * ## OPTIONS
      *
      * <pin_id>
-     * : A pin azonosítója
+     * : The ID of the pin
      *
-     * <szoveg>
-     * : A komment szövege
+     * <text>
+     * : The text of the comment
      *
-     * [--author=<nev>]
-     * : Szerző neve (alapértelmezett: AI Assistant)
+     * [--author=<name>]
+     * : Author's name (default: AI Assistant)
      *
      * ## EXAMPLES
      *
-     *     wp purepin comment 42 "Javítva, kérlek ellenőrizd"
-     *     wp purepin comment 42 "Megvizsgáltam" --author="Claude"
+     *     wp purepin comment 42 "Fixed, please check"
+     *     wp purepin comment 42 "I investigated it" --author="Claude"
      *
      * @when after_wp_load
      */
     public function comment( $args, $assoc ) {
         global $wpdb;
         if ( count( $args ) < 2 ) {
-            WP_CLI::error( 'Használat: wp purepin comment <pin_id> <szöveg>' );
+            WP_CLI::error( 'Usage: wp purepin comment <pin_id> <text>' );
         }
 
         $pin_id = (int) $args[0];
@@ -234,14 +234,14 @@ class PurePin_CLI {
         $author = sanitize_text_field( $assoc['author'] ?? 'AI Assistant' );
 
         $pin = $wpdb->get_row( $wpdb->prepare(
-            "SELECT id FROM {$wpdb->prefix}kgb_pins WHERE id = %d", $pin_id
+            "SELECT id FROM {$wpdb->prefix}purepin_pins WHERE id = %d", $pin_id
         ) );
         if ( ! $pin ) {
-            WP_CLI::error( "Nem található pin #$pin_id" );
+            WP_CLI::error( "Pin #$pin_id not found" );
         }
 
         $now = current_time( 'mysql' );
-        $wpdb->insert( $wpdb->prefix . 'kgb_pin_comments', [
+        $wpdb->insert( $wpdb->prefix . 'purepin_pin_comments', [
             'pin_id'       => $pin_id,
             'author_name'  => $author,
             'author_wp_id' => 0,
@@ -250,21 +250,21 @@ class PurePin_CLI {
             'created_at'   => $now,
             'is_read'      => 0,
         ] );
-        $wpdb->update( $wpdb->prefix . 'kgb_pins', [ 'updated_at' => $now ], [ 'id' => $pin_id ] );
+        $wpdb->update( $wpdb->prefix . 'purepin_pins', [ 'updated_at' => $now ], [ 'id' => $pin_id ] );
 
-        WP_CLI::success( "Komment hozzáadva a #{$pin_id} pinhez." );
+        WP_CLI::success( "Comment added to pin #{$pin_id}." );
     }
 
     /**
-     * Pin státuszának módosítása.
+     * Modify pin status.
      *
      * ## OPTIONS
      *
      * <pin_id>
-     * : A pin azonosítója
+     * : The ID of the pin
      *
      * <status>
-     * : Új státusz: open, in_progress, done
+     * : New status: open, in_progress, done
      *
      * ## EXAMPLES
      *
@@ -275,25 +275,25 @@ class PurePin_CLI {
     public function status( $args, $assoc ) {
         global $wpdb;
         if ( count( $args ) < 2 ) {
-            WP_CLI::error( 'Használat: wp purepin status <pin_id> <open|in_progress|done>' );
+            WP_CLI::error( 'Usage: wp purepin status <pin_id> <open|in_progress|done>' );
         }
 
         $pin_id    = (int) $args[0];
         $new_status = $args[1];
 
         if ( ! in_array( $new_status, [ 'open', 'in_progress', 'done' ], true ) ) {
-            WP_CLI::error( 'Érvényes státuszok: open, in_progress, done' );
+            WP_CLI::error( 'Valid statuses: open, in_progress, done' );
         }
 
         $updated = $wpdb->update(
-            $wpdb->prefix . 'kgb_pins',
+            $wpdb->prefix . 'purepin_pins',
             [ 'status' => $new_status, 'updated_at' => current_time( 'mysql' ) ],
             [ 'id' => $pin_id ]
         );
 
         if ( ! $updated ) {
-            WP_CLI::error( "Nem sikerült frissíteni (pin #{$pin_id} létezik?)" );
+            WP_CLI::error( "Failed to update (does pin #{$pin_id} exist?)" );
         }
-        WP_CLI::success( "Pin #{$pin_id} státusza: {$new_status}" );
+        WP_CLI::success( "Status of pin #{$pin_id}: {$new_status}" );
     }
 }

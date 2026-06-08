@@ -2,26 +2,33 @@
 /**
  * Plugin Name: PurePin Review
  * Description: Lets your clients drop pins and leave feedback directly on any element of your live WordPress site for lightning-fast revisions.
- * Version:     1.8.0
+ * Version:     0.9.0
  * Author:      Peter Csontos
+ * License:     GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: purepin-review
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'KGB_REVIEW_VERSION', '2.0.8' );
-define( 'KGB_REVIEW_DIR',       plugin_dir_path( __FILE__ ) );
-define( 'KGB_REVIEW_URL',       plugin_dir_url( __FILE__ ) );
-define( 'KGB_REVIEW_MAIN_FILE', __FILE__ );
+define( 'PUREPIN_REVIEW_VERSION', '0.9.2' );
+define( 'PUREPIN_REVIEW_DIR',       plugin_dir_path( __FILE__ ) );
+define( 'PUREPIN_REVIEW_URL',       plugin_dir_url( __FILE__ ) );
+define( 'PUREPIN_REVIEW_MAIN_FILE', __FILE__ );
 
-// ─── Aktiválás: táblák létrehozása ───────────────────────────────────────────
+add_action( 'init', function () {
+    load_plugin_textdomain( 'purepin-review', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+} );
 
-register_activation_hook( __FILE__, 'kgb_review_activate' );
+// ─── Activation: create tables ───────────────────────────────────────────
 
-function kgb_review_activate() {
+register_activation_hook( __FILE__, 'purepin_review_activate' );
+
+function purepin_review_activate() {
     global $wpdb;
     $charset    = $wpdb->get_charset_collate();
-    $pins_tbl   = $wpdb->prefix . 'kgb_pins';
-    $cmnts_tbl  = $wpdb->prefix . 'kgb_pin_comments';
+    $pins_tbl   = $wpdb->prefix . 'purepin_pins';
+    $cmnts_tbl  = $wpdb->prefix . 'purepin_pin_comments';
 
     $sql = "
     CREATE TABLE $pins_tbl (
@@ -31,12 +38,21 @@ function kgb_review_activate() {
         x_pct        DECIMAL(7,4) NOT NULL DEFAULT 0,
         y_pct        DECIMAL(7,4) NOT NULL DEFAULT 0,
         status       VARCHAR(20)  NOT NULL DEFAULT 'open',
+        important    TINYINT(1)   NOT NULL DEFAULT 0,
+        is_fixed     TINYINT(1)   NOT NULL DEFAULT 0,
         author_name  VARCHAR(150) NOT NULL DEFAULT '',
         author_wp_id BIGINT(20)            DEFAULT 0,
+        description  TEXT         NOT NULL,
+        viewport_width SMALLINT   NOT NULL DEFAULT 0,
+        css_selector VARCHAR(500) NOT NULL DEFAULT '',
+        scroll_context TEXT       NOT NULL,
         created_at   DATETIME     NOT NULL,
         updated_at   DATETIME     NOT NULL,
+        description_updated_at DATETIME     DEFAULT NULL,
         PRIMARY KEY (id),
-        KEY page_url (page_url(191))
+        KEY page_url (page_url(191)),
+        KEY status (status),
+        KEY author_wp_id (author_wp_id)
     ) $charset;
 
     CREATE TABLE $cmnts_tbl (
@@ -49,7 +65,8 @@ function kgb_review_activate() {
         created_at   DATETIME     NOT NULL,
         is_read      TINYINT(1)   NOT NULL DEFAULT 0,
         PRIMARY KEY (id),
-        KEY pin_id (pin_id)
+        KEY pin_id (pin_id),
+        KEY is_read (is_read)
     ) $charset;
     ";
 
@@ -57,15 +74,22 @@ function kgb_review_activate() {
     dbDelta( $sql );
 }
 
-// ─── DB migráció: type oszlop hozzáadása ha hiányzik ─────────────────────────
+// ─── DB migration: only if database version is lower ───────────────────
 
-add_action( 'plugins_loaded', 'kgb_review_maybe_upgrade' );
+define( 'PUREPIN_REVIEW_DB_VERSION', '4' );
 
-function kgb_review_maybe_upgrade() {
+add_action( 'plugins_loaded', 'purepin_review_maybe_upgrade' );
+
+function purepin_review_maybe_upgrade() {
+    if ( get_option( 'purepin_review_db_version' ) === PUREPIN_REVIEW_DB_VERSION ) {
+        return;
+    }
+
     global $wpdb;
-    $pt = $wpdb->prefix . 'kgb_pins';
-    $ct = $wpdb->prefix . 'kgb_pin_comments';
+    $pt = $wpdb->prefix . 'purepin_pins';
+    $ct = $wpdb->prefix . 'purepin_pin_comments';
 
+    // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
     if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$ct` LIKE 'type'" ) ) ) {
         $wpdb->query( "ALTER TABLE `$ct` ADD COLUMN `type` VARCHAR(20) NOT NULL DEFAULT 'comment' AFTER `is_read`" );
     }
@@ -75,51 +99,75 @@ function kgb_review_maybe_upgrade() {
     if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'is_fixed'" ) ) ) {
         $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `is_fixed` TINYINT(1) NOT NULL DEFAULT 0 AFTER `important`" );
     }
-    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'author_ip'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `author_ip` VARCHAR(45) NOT NULL DEFAULT '' AFTER `author_wp_id`" );
-    }
     if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'description'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `description` TEXT NOT NULL AFTER `author_ip`" );
+        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `description` TEXT NOT NULL AFTER `author_wp_id`" );
     }
+    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'viewport_width'" ) ) ) {
+        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `viewport_width` SMALLINT NOT NULL DEFAULT 0 AFTER `description`" );
+    }
+    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'css_selector'" ) ) ) {
+        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `css_selector` VARCHAR(500) NOT NULL DEFAULT '' AFTER `viewport_width`" );
+    }
+    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'scroll_context'" ) ) ) {
+        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `scroll_context` TEXT NOT NULL DEFAULT '' AFTER `css_selector`" );
+    }
+    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'description_updated_at'" ) ) ) {
+        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `description_updated_at` DATETIME DEFAULT NULL AFTER `updated_at`" );
+    }
+
+    // V4 Indexes
+    if ( get_option( 'purepin_review_db_version' ) < '4' ) {
+        if ( empty( $wpdb->get_results( "SHOW INDEX FROM `$pt` WHERE Key_name = 'status'" ) ) ) {
+            $wpdb->query( "ALTER TABLE `$pt` ADD INDEX `status` (`status`)" );
+        }
+        if ( empty( $wpdb->get_results( "SHOW INDEX FROM `$pt` WHERE Key_name = 'author_wp_id'" ) ) ) {
+            $wpdb->query( "ALTER TABLE `$pt` ADD INDEX `author_wp_id` (`author_wp_id`)" );
+        }
+        if ( empty( $wpdb->get_results( "SHOW INDEX FROM `$ct` WHERE Key_name = 'is_read'" ) ) ) {
+            $wpdb->query( "ALTER TABLE `$ct` ADD INDEX `is_read` (`is_read`)" );
+        }
+    }
+    // phpcs:enable
+
+    update_option( 'purepin_review_db_version', PUREPIN_REVIEW_DB_VERSION );
 }
 
-// ─── Betöltés ────────────────────────────────────────────────────────────────
+// ─── Load ────────────────────────────────────────────────────────────────
 
-require_once KGB_REVIEW_DIR . 'includes/Settings.php';
-require_once KGB_REVIEW_DIR . 'includes/Api.php';
+require_once PUREPIN_REVIEW_DIR . 'includes/Settings.php';
+require_once PUREPIN_REVIEW_DIR . 'includes/Api.php';
 
-if ( defined( 'WP_CLI' ) && WP_CLI && kgb_rv_opt( 'cli_enabled' ) === '1' ) {
-    require_once KGB_REVIEW_DIR . 'includes/Cli.php';
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+    require_once PUREPIN_REVIEW_DIR . 'includes/Cli.php';
 }
 
-add_action( 'wp_enqueue_scripts', 'kgb_review_enqueue' );
+add_action( 'wp_enqueue_scripts', 'purepin_review_enqueue' );
 
-function kgb_review_enqueue() {
-    $is_editor      = current_user_can( 'edit_posts' );
-    $has_review_get = isset( $_GET['review'] );
-    $fully_public   = kgb_rv_fully_public();
-    $public_link    = kgb_rv_public_link();
+function purepin_review_enqueue() {
+    if ( ! is_user_logged_in() ) {
+        return;
+    }
 
-    // Szerkesztő mindig látja
-    // Teljesen nyilvános mód: ?review=1 nélkül is
-    // Publikus link mód: ?review=1 kell
-    $can_see = $is_editor
-        || ( $fully_public && $has_review_get )
-        || ( $public_link  && $has_review_get );
+    $is_dev    = purepin_rv_is_developer();
+    $is_client = purepin_rv_is_client();
 
-    if ( ! $can_see ) return;
+    if ( ! $is_dev && ! $is_client ) {
+        return;
+    }
+
+    $can_manage = $is_dev;
 
     wp_enqueue_style(
         'purepin-review',
-        KGB_REVIEW_URL . 'assets/css/review.css',
+        PUREPIN_REVIEW_URL . 'assets/css/review.css',
         [],
-        KGB_REVIEW_VERSION
+        PUREPIN_REVIEW_VERSION
     );
     wp_enqueue_script(
         'purepin-review',
-        KGB_REVIEW_URL . 'assets/js/review.js',
+        PUREPIN_REVIEW_URL . 'assets/js/review.js',
         [],
-        KGB_REVIEW_VERSION,
+        PUREPIN_REVIEW_VERSION,
         true
     );
 
@@ -129,50 +177,60 @@ function kgb_review_enqueue() {
         'nonce'              => wp_create_nonce( 'wp_rest' ),
         'pageUrl'            => trailingslashit( esc_url( home_url( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ) ) ) ) ),
         'pageTitle'          => wp_title( '–', false ) ?: get_bloginfo( 'name' ),
-        'canManage'          => $is_editor,
-        'allowGuests'        => kgb_rv_allow_guests(),
-        'allowGuestComment'  => kgb_rv_opt( 'allow_guest_comment' ) === '1',
-        'tokenRequired'      => ! $is_editor && kgb_rv_token_enabled() && ! kgb_rv_check_session_cookie(),
-        'displayMode'        => kgb_rv_opt( 'display_mode' ) ?: 'per_page',
-        'pinLimit'           => (int) kgb_rv_opt( 'pin_limit' ),
+        'canManage'          => $can_manage,
+        'displayMode'        => purepin_rv_opt( 'display_mode' ) ?: 'per_page',
+        'pinLimit'           => (int) purepin_rv_opt( 'pin_limit' ),
         'user'               => $user->ID ? [
             'id'   => $user->ID,
             'name' => $user->display_name ?: $user->user_login,
         ] : null,
-        'version'            => KGB_REVIEW_VERSION,
-        'statusPerm'         => kgb_rv_opt( 'status_perm' ) ?: 'submitter',
-        'fabPosition'        => kgb_rv_opt( 'fab_position' ) ?: 'right',
+        'version'            => PUREPIN_REVIEW_VERSION,
+        'clientCanClose'     => purepin_rv_opt( 'client_can_close' ) === '1',
+        'fabPosition'        => purepin_rv_opt( 'fab_position' ) ?: 'right',
+        'strings'            => [
+            'newPin'          => __( 'New pin', 'purepin-review' ),
+            'namePlaceholder' => __( 'Your name…', 'purepin-review' ),
+            'descPlaceholder' => __( 'Description… what should we pay attention to?', 'purepin-review' ),
+            'urgent'          => __( 'Urgent task', 'purepin-review' ),
+            'pinPlaceLabel'   => __( 'Create a new review', 'purepin-review' ),
+            'filterUnread'    => __( 'Unread comments', 'purepin-review' ),
+            'filterNew'       => __( 'New pins', 'purepin-review' ),
+            'tabOpen'         => __( 'Open', 'purepin-review' ),
+            'tabInProgress'   => __( 'In progress', 'purepin-review' ),
+            'tabDone'         => __( 'Done', 'purepin-review' ),
+            'statusOpen'      => __( 'Open', 'purepin-review' ),
+            'statusInProgress'=> __( 'In Progress', 'purepin-review' ),
+            'statusDone'      => __( 'Done', 'purepin-review' ),
+        ],
     ] );
 }
 
-// ─── Plugin lista: Beállítások link ──────────────────────────────────────────
+// ─── Plugin list: Settings link ──────────────────────────────────────────
 
-add_filter( 'plugin_action_links_purepin-review/purepin-review.php', 'kgb_review_action_links' );
+add_filter( 'plugin_action_links_purepin-review/purepin-review.php', 'purepin_review_action_links' );
 
-function kgb_review_action_links( $links ) {
-    $settings_link = '<a href="' . admin_url( 'options-general.php?page=purepin-review' ) . '">Beállítások</a>';
+function purepin_review_action_links( $links ) {
+    $settings_link = '<a href="' . admin_url( 'options-general.php?page=purepin-review' ) . '">' . __( 'Settings', 'purepin-review' ) . '</a>';
     array_unshift( $links, $settings_link );
     return $links;
 }
 
-// ─── Admin bar gomb ──────────────────────────────────────────────────────────
+// ─── Admin bar button ──────────────────────────────────────────────────────────
 
-add_action( 'admin_bar_menu', 'kgb_review_admin_bar', 100 );
+add_action( 'admin_bar_menu', 'purepin_review_admin_bar', 100 );
 
-function kgb_review_admin_bar( WP_Admin_Bar $bar ) {
+function purepin_review_admin_bar( WP_Admin_Bar $bar ) {
     if ( ! current_user_can( 'edit_posts' ) ) return;
 
     $current_url = esc_url( home_url( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ) ) ) );
-    // Ha admin oldalon vagyunk, a főoldalra mutat; egyébként az aktuális oldalra
     if ( is_admin() ) {
         $current_url = home_url( '/' );
     }
-    $review_url = add_query_arg( 'review', '1', $current_url );
 
     $bar->add_node( [
         'id'    => 'purepin-review-toggle',
-        'title' => '📌 PurePin',
-        'href'  => $review_url,
+        'title' => 'PurePin',
+        'href'  => $current_url,
         'meta'  => [ 'target' => '_blank' ],
     ] );
 }

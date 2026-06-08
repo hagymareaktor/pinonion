@@ -1,0 +1,15 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "selector-class-pattern": null,
+    "declaration-block-single-line-max-declarations": null,
+    "color-function-notation": null,
+    "alpha-value-notation": null,
+    "color-function-alias-notation": null,
+    "declaration-property-value-keyword-no-deprecated": null,
+    "rule-empty-line-before": null,
+    "no-duplicate-selectors": null,
+    "no-descending-specificity": null,
+    "declaration-block-no-duplicate-properties": null
+  }
+}
