@@ -1,56 +1,50 @@
 === PurePin Review ===
-Contributors: petercsontos
-Tags: feedback, review, annotation, client, pin
+Contributors: YOUR_WORDPRESS_ORG_USERNAME
+Tags: review, feedback, client feedback, design, collaboration
 Requires at least: 6.0
 Tested up to: 6.5
+Stable tag: 0.9.2
 Requires PHP: 7.4
-Stable tag: 0.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Let your clients drop pins and leave feedback directly on any element of your live WordPress site for lightning-fast revisions.
+Lets your clients drop pins and leave feedback directly on any element of your live WordPress site for lightning-fast revisions.
 
 == Description ==
 
-PurePin Review adds a floating feedback button to your WordPress site, allowing clients to click any element on the page and leave a pin with a comment. Ideal for web agencies collecting client feedback during the review process.
+PurePin Review is a visual feedback tool that allows you and your clients to drop feedback pins directly onto any element of your live WordPress website. Stop wasting time with spreadsheets and endless email chains.
 
-**Features:**
-
-* Click any element to drop a pin with a comment
-* Pin status workflow: Open → In Progress → Done
-* Guest and registered user support
-* Optional access token (PIN code) protection
-* Per-page or global pin view
-* Auto-close pins after a configurable number of days
-* WP-CLI commands for automation and AI tooling
+Key Features:
+* **Visual Pinning:** Click anywhere on your site to leave a comment attached to that specific HTML element.
+* **Task Management:** Mark pins as Open, In Progress, or Done.
+* **Modern Interface:** A sleek, floating interface that stays out of your way.
+* **Responsive:** Works seamlessly across desktop and mobile devices.
+* **No Third-Party Tracking:** All your data stays securely on your own server.
 
 == Installation ==
 
-1. Upload the `purepin-review` folder to the `/wp-content/plugins/` directory.
-2. Activate the plugin through the **Plugins** menu in WordPress.
-3. Go to **Settings → PurePin Review** to configure access and notifications.
-4. Share the `?review=1` link with your clients.
+1. Upload the plugin files to the `/wp-content/plugins/purepin` directory, or install the plugin through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress.
+3. Go to **Settings > PurePin** to configure who can leave feedback.
+4. Visit the front-end of your site and start dropping pins!
 
 == Frequently Asked Questions ==
 
-= Do clients need a WordPress account? =
+= Does it work with page builders? =
 
-No. You can enable guest mode so clients can drop pins using only their name, without registering.
+Yes, PurePin Review works as an overlay on top of your existing site, meaning it is compatible with Elementor, Divi, Gutenberg, and almost all other page builders and themes.
 
-= How do I protect the review link? =
+= Where is the data stored? =
 
-Enable the PIN code option in Settings → Access. Clients will be prompted for the code when they open the `?review=1` link.
-
-= Will the plugin interfere with my theme? =
-
-The plugin only loads its assets when the `?review=1` parameter is present (or for logged-in editors). It does not affect public visitors.
+All pins, comments, and feedback are stored entirely within your own WordPress database. We do not use external APIs or SaaS platforms to store your data.
 
 == Screenshots ==
 
-1. Feedback panel with pin list
-2. Settings page — Access tab
+1. Dropping a new feedback pin on a live webpage.
+2. The interactive PurePin dashboard to manage open tasks.
+3. Plugin settings page.
 
 == Changelog ==
 
-= 0.9.0 =
-* Initial Beta Release
+= 0.9.2 =
+* Initial public release on WordPress.org
