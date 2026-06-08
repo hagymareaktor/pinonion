@@ -892,7 +892,7 @@ body.pp-rv-add-mode .pp-rv-acb-btn { cursor: pointer !important; }
   min-height: 22px;
   box-sizing: border-box;
   border-radius: 50% !important;
-  background: #4f46e5;
+  background: #a855f7;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -1122,16 +1122,7 @@ body.pp-rv-add-mode .pp-rv-acb-btn { cursor: pointer !important; }
 }
 .pp-rv-pin-item--new .pp-rv-unread-msg { color: #818cf8; }
 
-/* Pin item – fontos kiemelés */
-.pp-rv-pin-item--important {
-  border-left: 3px solid #f59e0b;
-}
-
-.pp-rv-pin-item--important .pp-rv-pin-item-num {
-  background: #d97706;
-  color: #fff;
-}
-
+/* Pin item – fontos kiemelés eltávolítva kérésre */
 /* Actions row (star + done button) */
 .pp-rv-pin-item-actions {
   display: flex;

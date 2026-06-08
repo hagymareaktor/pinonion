@@ -397,7 +397,7 @@
       return;
     }
 
-    const statusColor = { open: '#f59e0b', in_progress: '#3b82f6', done: '#22c55e' };
+    const statusColor = { open: '#a855f7', in_progress: '#3b82f6', done: '#22c55e' };
     const openedPins  = getOpenedPins();
 
     const limit = state.listPage * state.listPerPage;
