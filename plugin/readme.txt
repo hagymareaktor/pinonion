@@ -12,6 +12,9 @@ Lets your clients drop pins and leave feedback directly on any element of your l
 
 == Description ==
 
+🔥 **Currently in Open Beta (v0.9.0)** 🔥
+We are currently in an open beta phase! This means the plugin is completely free to use without limitations while we gather feedback from the community for our upcoming v1.0 release. Try it out, and please let us know what features you'd like to see!
+
 PurePin Review is a visual feedback tool that allows you and your clients to drop feedback pins directly onto any element of your live WordPress website. Stop wasting time with spreadsheets and endless email chains.
 
 Key Features:
