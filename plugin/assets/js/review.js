@@ -1615,14 +1615,13 @@
         </div>
         ${cfg.user || cfg.canManage ? `
         <div class="pp-rv-sd-item" id="pp-rv-sd-panel">
-          <span class="pp-rv-sd-label">Reviews</span>
+          <span class="pp-rv-sd-label pp-rv-sd-label--with-badge">Reviews <span class="pp-rv-badge pp-rv-badge--inline" id="pp-rv-badge" style="display:none">0</span></span>
           <button class="pp-rv-sd-btn" id="pp-rv-sd-panel-btn" title="Review list" style="position:relative">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               ${cfg.fabPosition === 'left'
                 ? '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><polyline points="13 8 17 12 13 16"/>'
                 : '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/><polyline points="11 8 7 12 11 16"/>'}
             </svg>
-            <span class="pp-rv-badge" id="pp-rv-badge" style="display:none">0</span>
           </button>
         </div>` : ''}
       </div>
