@@ -73,11 +73,13 @@ function purepin_rv_get_pins( WP_REST_Request $req ) {
         $where .= $wpdb->prepare( ' AND p.author_wp_id = %d', get_current_user_id() );
     }
 
+    $uid = get_current_user_id();
+
     // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
     $rows = $wpdb->get_results(
         "SELECT p.*,
             COUNT(c.id)                                        AS comment_count,
-            SUM( CASE WHEN c.is_read = 0 THEN 1 ELSE 0 END )  AS unread_count
+            SUM( CASE WHEN c.is_read = 0 AND c.author_wp_id != $uid THEN 1 ELSE 0 END )  AS unread_count
          FROM $pt p
          LEFT JOIN $ct c ON c.pin_id = p.id
          $where
