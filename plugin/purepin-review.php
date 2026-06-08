@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'PUREPIN_REVIEW_VERSION', '0.9.2' );
+define( 'PUREPIN_REVIEW_VERSION', '0.9.0' );
 define( 'PUREPIN_REVIEW_DIR',       plugin_dir_path( __FILE__ ) );
 define( 'PUREPIN_REVIEW_URL',       plugin_dir_url( __FILE__ ) );
 define( 'PUREPIN_REVIEW_MAIN_FILE', __FILE__ );

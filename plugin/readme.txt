@@ -3,7 +3,7 @@ Contributors: YOUR_WORDPRESS_ORG_USERNAME
 Tags: review, feedback, client feedback, design, collaboration
 Requires at least: 6.0
 Tested up to: 6.5
-Stable tag: 0.9.2
+Stable tag: 0.9.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -46,5 +46,5 @@ All pins, comments, and feedback are stored entirely within your own WordPress d
 
 == Changelog ==
 
-= 0.9.2 =
+= 0.9.0 =
 * Initial public release on WordPress.org
