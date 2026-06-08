@@ -29,9 +29,12 @@ function purepin_review_register_routes() {
         [ 'methods' => 'POST', 'callback' => 'purepin_rv_add_comment',  'permission_callback' => 'is_user_logged_in' ],
     ] );
 
-    // Mark as read
+    // Mark as read / unread
     register_rest_route( $ns, '/pins/(?P<id>\d+)/read', [
         [ 'methods' => 'POST', 'callback' => 'purepin_rv_mark_read', 'permission_callback' => 'purepin_rv_can_manage' ],
+    ] );
+    register_rest_route( $ns, '/pins/(?P<id>\d+)/unread', [
+        [ 'methods' => 'POST', 'callback' => 'purepin_rv_mark_unread', 'permission_callback' => 'purepin_rv_can_manage' ],
     ] );
 
     // User UI preferences (for logged in users)
@@ -105,6 +108,10 @@ function purepin_rv_create_pin( WP_REST_Request $req ) {
     $viewport_width = (int) $req->get_param( 'viewport_width' );
     $css_selector   = sanitize_text_field( $req->get_param( 'css_selector' ) ?? '' );
     $scroll_context = sanitize_textarea_field( $req->get_param( 'scroll_context' ) ?? '' );
+
+    if ( empty( trim( $description ) ) ) {
+        return new WP_Error( 'missing', __( 'Description is required.', 'purepin-review' ), [ 'status' => 400 ] );
+    }
 
     if ( mb_strlen( $description ) > 1000 ) {
         return new WP_Error( 'too_long', __( 'Failed to save: text is too long (maximum 1000 characters).', 'purepin-review' ), [ 'status' => 400 ] );
@@ -340,6 +347,16 @@ function purepin_rv_mark_read( WP_REST_Request $req ) {
     $wpdb->update(
         $wpdb->prefix . 'purepin_pin_comments',
         [ 'is_read' => 1 ],
+        [ 'pin_id'  => (int) $req['id'] ]
+    );
+    return rest_ensure_response( [ 'ok' => true ] );
+}
+
+function purepin_rv_mark_unread( WP_REST_Request $req ) {
+    global $wpdb;
+    $wpdb->update(
+        $wpdb->prefix . 'purepin_pin_comments',
+        [ 'is_read' => 0 ],
         [ 'pin_id'  => (int) $req['id'] ]
     );
     return rest_ensure_response( [ 'ok' => true ] );

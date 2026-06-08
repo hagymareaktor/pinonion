@@ -930,7 +930,16 @@
 
     let a = author();
 
-    const description = popup.querySelector('#pp-rv-desc-in')?.value.trim() || '';
+    const descIn = popup.querySelector('#pp-rv-desc-in');
+    const description = descIn?.value.trim() || '';
+
+    if (!description) {
+      descIn?.focus();
+      descIn?.classList.add('shake');
+      setTimeout(() => descIn?.classList.remove('shake'), 400);
+      return;
+    }
+
     const important   = popup.querySelector('#pp-rv-urgent-chk')?.checked ? 1 : 0;
     const btn = popup.querySelector('#pp-rv-popup-submit');
     if (btn.disabled) return;
@@ -1145,7 +1154,7 @@
       <div class="pp-rv-popup-head">
         <div class="pp-rv-popup-nav">
           <span class="pp-rv-popup-id" style="color:#94a3b8; font-weight:bold; margin-right:8px;">
-            ${parseInt(pin.important) ? '<span style="color:#ef4444; font-weight:bold; margin-right:4px;">!</span>' : ''}#${pin.id}
+            ${parseInt(pin.important) ? '<span style="color:#f59e0b; font-weight:bold; margin-right:4px;">!</span>' : ''}#${pin.id}
           </span>
           <button class="pp-rv-popup-nav-btn" id="pp-rv-popup-prev" title="Previous pin">‹</button>
           <span class="pp-rv-popup-nav-info" id="pp-rv-popup-nav-info">–</span>
@@ -1156,6 +1165,8 @@
           ${canDel || canChangeStatus ? `<div class="pp-rv-kebab-wrap" id="pp-rv-kebab-wrap">
             <button class="pp-rv-kebab-btn" id="pp-rv-kebab-btn" title="Actions">⋮</button>
             <div class="pp-rv-kebab-menu" id="pp-rv-kebab-menu">
+              ${cfg.canManage ? `<button class="pp-rv-kebab-item" id="pp-rv-edit-desc-trigger"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;flex-shrink:0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit description</button>` : ''}
+              ${cfg.canManage ? `<button class="pp-rv-kebab-item" id="pp-rv-set-unread-trigger"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;flex-shrink:0"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="m9 18 3-3-3-3"/></svg>Set unread</button>` : ''}
               ${canChangeStatus ? `
                 <label class="pp-rv-kebab-item pp-rv-kebab-item--switch">
                   <span>Urgent</span>
@@ -1166,7 +1177,6 @@
                 </label>
               ` : ''}
               ${canDel ? `<button class="pp-rv-kebab-item pp-rv-kebab-item--danger" id="pp-rv-del-trigger">Delete review</button>` : ''}
-              ${cfg.canManage ? `<button class="pp-rv-kebab-item" id="pp-rv-edit-desc-trigger"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;flex-shrink:0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit description</button>` : ''}
             </div>
           </div>` : ''}
           <button class="pp-rv-close" id="pp-rv-popup-x">✕</button>
@@ -1344,6 +1354,25 @@
         renderMarkers();
         renderList();
         urgentCheckbox.disabled = false;
+      });
+    }
+    // ── Set unread ───────────────────────────────────────────────────────────
+    const unreadTrigger = popup.querySelector('#pp-rv-set-unread-trigger');
+    if (unreadTrigger) {
+      unreadTrigger.addEventListener('click', async () => {
+        kebabMenu.classList.remove('open');
+        unreadTrigger.disabled = true;
+        try {
+          await api('POST', `pins/${pinId}/unread`);
+          pin.unread_count = pin.comment_count || 1; // Mark as unread locally
+          state.unreadCounts[pinId] = pin.unread_count;
+          renderMarkers();
+          renderList();
+          updateBadge();
+        } catch (err) {
+          alert('Error: ' + err.message);
+        }
+        unreadTrigger.disabled = false;
       });
     }
 
