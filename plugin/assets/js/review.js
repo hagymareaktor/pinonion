@@ -1820,6 +1820,20 @@
 
     document.getElementById('pp-rv-panel-close').addEventListener('click', closePanel);
 
+    // Scroll list if user scrolls anywhere in the panel
+    document.getElementById('pp-rv-panel').addEventListener('wheel', e => {
+      const pinList = document.getElementById('pp-rv-pin-list');
+      if (!pinList) return;
+      
+      const inList = e.target.closest('#pp-rv-pin-list');
+      const inMenu = e.target.closest('.pp-rv-sort-menu, .pp-rv-filter-menu, .pp-rv-page-filter-menu');
+      
+      if (!inList && !inMenu) {
+        e.preventDefault();
+        pinList.scrollTop += e.deltaY;
+      }
+    }, { passive: false });
+
     document.getElementById('pp-rv-search').addEventListener('input', e => {
       state.search = e.target.value;
       renderList(true);
