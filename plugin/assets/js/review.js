@@ -122,21 +122,9 @@
 
   // Modern confirm modal
   function ppConfirm(message, onConfirm) {
-    const overlay = document.createElement('div');
-    overlay.className = 'pp-rv-modal-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.8);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:999999;';
-    overlay.innerHTML = `
-      <div style="background:#1e1e2e;border:1px solid #2d2d44;border-radius:12px;padding:24px;max-width:320px;width:100%;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.5);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-        <div style="margin-bottom:20px;color:#f8fafc;font-size:16px;font-weight:600;">${esc(message)}</div>
-        <div style="display:flex;gap:12px;justify-content:center;">
-          <button class="pp-rv-confirm-no" style="flex:1;padding:8px;border-radius:6px;border:none;background:#2d2d44;color:#a0aec0;cursor:pointer;font-weight:600;">No</button>
-          <button class="pp-rv-confirm-yes" style="flex:1;padding:8px;border-radius:6px;border:none;background:#4f46e5;color:#fff;cursor:pointer;font-weight:600;">Yes</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-    overlay.querySelector('.pp-rv-confirm-yes').addEventListener('click', () => { overlay.remove(); onConfirm(); });
-    overlay.querySelector('.pp-rv-confirm-no').addEventListener('click', () => overlay.remove());
+    if (window.confirm(message)) {
+      onConfirm();
+    }
   }
 
   // EC-2: stable CSS selector generation (max 6 levels, stops at id)
