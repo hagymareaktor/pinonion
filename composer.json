@@ -1,0 +1,8 @@
+{
+    "name": "hagymareaktor/purepin",
+    "description": "PurePin Review Plugin",
+    "require-dev": {
+        "phpstan/phpstan": "^1.10",
+        "szepeviktor/phpstan-wordpress": "^1.3"
+    }
+}
