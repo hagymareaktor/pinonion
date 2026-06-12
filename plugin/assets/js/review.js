@@ -1,4 +1,4 @@
-/* PurePin Review — frontend JS */
+/* PinOnion — frontend JS */
 (function () {
   'use strict';
 
@@ -6,7 +6,7 @@
   if (!cfg) return;
 
   /* ── State ─────────────────────────────────────────────────────────────── */
-  const SESSION_KEY = 'purepin-rv-ui';
+  const SESSION_KEY = 'pinonion-rv-ui';
 
   function loadSavedState() {
     try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}'); } catch { return {}; }
@@ -334,22 +334,22 @@
 
   /* ── Megnyitott pinek nyomon követése (localStorage) ───────────────────── */
   function getOpenedPins() {
-    try { return new Set(JSON.parse(localStorage.getItem('purepin-rv-opened') || '[]')); } catch { return new Set(); }
+    try { return new Set(JSON.parse(localStorage.getItem('pinonion-rv-opened') || '[]')); } catch { return new Set(); }
   }
   function markPinOpened(id) {
     const s = getOpenedPins();
     s.add(String(id));
-    localStorage.setItem('purepin-rv-opened', JSON.stringify([...s]));
+    localStorage.setItem('pinonion-rv-opened', JSON.stringify([...s]));
   }
 
   // Saját pin-ek nyilvántartása (submitter jogosultsághoz)
   function getMyPins() {
-    try { return new Set(JSON.parse(localStorage.getItem('purepin-rv-my-pins') || '[]')); } catch { return new Set(); }
+    try { return new Set(JSON.parse(localStorage.getItem('pinonion-rv-my-pins') || '[]')); } catch { return new Set(); }
   }
   function trackMyPin(id) {
     const s = getMyPins();
     s.add(String(id));
-    localStorage.setItem('purepin-rv-my-pins', JSON.stringify([...s]));
+    localStorage.setItem('pinonion-rv-my-pins', JSON.stringify([...s]));
   }
   function isMyPin(id) {
     // WP bejelentkezett felhasználó esetén a szerver ellenőriz;
@@ -1264,20 +1264,9 @@
           statusPill.disabled = true;
           await api('PATCH', `pins/${pinId}`, { status: s, author_name: ra.name, author_wp_id: ra.wp_id });
           pin.status = s;
-          const updated = await api('GET', `pins/${pinId}/comments`);
-          clist.innerHTML = buildCommentsHtml(updated);
-          clist.scrollTop = clist.scrollHeight;
+          openPinDetail(pinId);
           renderMarkers();
           renderList();
-          // Pill frissítése: szín + szöveg + megmaradt opciók
-          statusPill.className = `pp-rv-status-pill pp-rv-status-pill--${s}`;
-          statusPill.querySelector('.pp-rv-sdot').className = `pp-rv-sdot pp-rv-sdot--${s}`;
-          popup.querySelector('#pp-rv-status-label').textContent = statusLabels[s] ?? s;
-          statusMenu.innerHTML = allowedStatuses.filter(x => x !== s)
-            .map(x => `<button class="pp-rv-status-opt" data-status="${x}">
-              <span class="pp-rv-sdot pp-rv-sdot--${x}"></span>${statusLabels[x]}
-            </button>`).join('');
-          statusPill.disabled = false;
         }
       });
       document.addEventListener('click', function closeStatusMenu(ev) {
@@ -1717,7 +1706,7 @@
       <div class="pp-rv-panel-header">
         <span class="pp-rv-panel-title">
           <svg class="pp-rv-panel-logo" viewBox="0 0 1180 1100"><defs><linearGradient id="ppGrad1" gradientUnits="userSpaceOnUse" x1="570.982" y1="880.328" x2="754.184" y2="241.812"><stop offset="0" stop-color="rgb(50,28,189)"/><stop offset="1" stop-color="rgb(142,64,240)"/></linearGradient></defs><path fill="url(#ppGrad1)" d="M599.763 194.423C690.416 164.209 800.292 183.904 873.947 244.164C893.592 260.236 917.262 282.756 931.099 304.166C947.249 323.338 964.073 360.729 971.666 384.147C994.821 456.695 988.06 535.485 952.883 603.027C894.2 717.505 772.333 773.345 646.862 756.612C640.92 755.82 634.902 755.02 629.067 753.63C618.678 751.155 596.567 741.546 586.855 745.196C570.683 751.273 582.596 803.815 575.563 820.439C572.462 827.768 566.925 833.471 559.495 836.408C555.168 838.118 550.727 838.638 546.109 838.882C528.096 839.834 509.512 838.326 491.425 838.406C469.401 838.502 446.481 840.236 424.564 838.878C419.628 838.572 414.391 837.851 409.848 835.801C402.471 832.473 396.375 825.622 393.791 817.952C390.415 807.929 392.41 719.4 392.411 701.16C392.415 621.681 390.81 541.808 392.876 462.377C393.075 453.535 393.767 444.711 394.951 435.946C399.329 402.144 409.763 369.408 425.754 339.307C462.205 269.812 524.815 217.682 599.763 194.423z"/><path fill="rgb(140,68,236)" d="M599.763 194.423C690.416 164.209 800.292 183.904 873.947 244.164C893.592 260.236 917.262 282.756 931.099 304.166C931.137 307.862 931.762 308.284 929.948 310.984C929.841 311.006 889.909 316.201 890.628 316.26C876.882 315.119 855.238 301.68 842.892 297.224C822.386 289.823 800.173 283.322 780.039 274.445C767.765 269.033 753.669 258.649 740.567 254.198C734.957 252.293 725.058 250.925 718.676 249.548C705.677 246.744 694.504 244.258 681.089 242.653C667.989 241.086 657.176 240.974 643.589 239.632C629.626 238.253 606.795 234.416 596.688 223.341C594.83 221.305 596.205 216.295 596.617 213.387C594.708 209.874 595.277 214.102 591.698 211.177C592.312 203.336 598.145 201.633 599.763 194.423z"/><path fill="rgb(255,255,255)" d="M681.981 300.435C703.132 299.701 721.893 301.63 742.208 307.77C786.023 321.314 822.729 351.591 844.36 392.029C865.278 431.364 869.645 477.416 856.493 519.981C843.12 563.531 813.007 599.992 772.77 621.355C728.712 644.581 681.85 646.735 634.776 632.272L613.979 624.284C598.278 631.03 527.047 672.769 517.448 671.347C515.012 670.986 512.491 669.56 511.179 667.435C509.584 664.853 509.78 661.82 510.164 658.94C511.458 649.22 514.785 639.308 517.273 629.798C523.757 605.019 531.553 579.914 535.909 554.68C524.907 525.116 516.936 517.461 514.72 481.155C512.314 436.324 527.829 392.376 557.848 358.992C590.414 322.473 633.508 303.249 681.981 300.435z"/><path fill="rgb(140,68,236)" d="M612.332 403.145C662.892 401.823 714.547 404 765.193 403.268C785.922 402.968 792.454 428.915 769.73 434.952C752.151 435.344 612.712 436.411 607.172 433.84C603.192 431.994 599.113 428.254 597.62 424.041C596.013 419.507 597.267 416.44 599.355 412.358C602.234 406.728 606.593 404.965 612.332 403.145z"/><path fill="rgb(140,68,236)" d="M608.894 457.178C628.479 456.386 764.09 454.641 774.681 458.532C777.92 459.722 780.414 462.505 781.803 465.607C783.692 469.829 783.996 475.223 782.22 479.539C780.269 484.281 776.33 486.078 771.861 487.882C758.874 489.447 727.614 488.555 712.952 488.514C678.576 488.417 641.24 489.468 607.005 487.921C592.86 478.676 594.086 465.04 608.894 457.178z"/><path fill="rgb(140,68,236)" d="M610.445 510.422C624.29 509.712 702.358 507.906 711.321 511.484C715.924 513.322 719.759 517.302 721.57 521.911C722.807 525.059 723.011 528.478 721.591 531.612C718.818 537.734 715.547 539.615 709.45 541.902C676.338 542.393 641.348 542.067 608.222 541.86C593.362 532.267 592.706 516.02 610.445 510.422z"/></svg>
-          PurePin Review
+          PinOnion
         </span>
         <button class="pp-rv-close pp-rv-panel-close-btn" id="pp-rv-panel-close" title="Close panel">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2023,3 +2012,8 @@
     init();
   }
 })();
+
+
+
+
+

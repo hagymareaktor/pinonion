@@ -1,13 +1,15 @@
 {
-  "name": "purepin",
-  "version": "1.0.0",
-  "description": "",
+  "name": "pinonion",
+  "version": "0.9.1",
+  "description": "Visual feedback tool for WordPress",
   "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
     "lint:js": "eslint plugin/assets/js/**/*.js",
     "lint:css": "stylelint plugin/assets/css/**/*.css",
     "lint": "npm run lint:js && npm run lint:css",
@@ -19,6 +21,9 @@
   "type": "commonjs",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.2",
+    "@wordpress/env": "^11.8.0",
     "eslint": "^10.4.1",
     "globals": "^17.6.0",
     "husky": "^9.1.7",
@@ -32,3 +37,4 @@
     "plugin/assets/css/**/*.css": "stylelint"
   }
 }
+

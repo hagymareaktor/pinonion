@@ -1,3 +1,24 @@
 .mcp.json
 node_modules/
 *.log
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Tests and Dev Scripts
+/tests/
+playwright.config.ts
+*.ps1
+test_*.php
+review_original.js
+fix_review.py
+*.zip
+.claude/
+.qodo/
+artifacts/
+implementation_plan.md
+CLAUDE.md

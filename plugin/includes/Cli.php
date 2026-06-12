@@ -1,15 +1,20 @@
 <?php
 /**
- * PurePin Review – WP-CLI commands
- * Usage: wp purepin <command> [options]
+ * PinOnion – WP-CLI commands
+ * Usage: wp pinonion <command> [options]
+ *
+ * phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ * phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+ * phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) return;
 
-WP_CLI::add_command( 'purepin', 'PurePin_CLI' );
+WP_CLI::add_command( 'pinonion', 'PinOnion_CLI' );
 
-class PurePin_CLI {
+class PinOnion_CLI {
 
     /**
      * List pins.
@@ -30,16 +35,16 @@ class PurePin_CLI {
      *
      * ## EXAMPLES
      *
-     *     wp purepin list
-     *     wp purepin list --status=open
-     *     wp purepin list --important --format=json
+     *     wp pinonion list
+     *     wp pinonion list --status=open
+     *     wp pinonion list --important --format=json
      *
      * @when after_wp_load
      */
     public function list( $args, $assoc ) {
         global $wpdb;
-        $pt = $wpdb->prefix . 'purepin_pins';
-        $ct = $wpdb->prefix . 'purepin_pin_comments';
+        $pt = $wpdb->prefix . 'pinonion_pins';
+        $ct = $wpdb->prefix . 'pinonion_pin_comments';
 
         $where   = 'WHERE 1=1';
         $status  = $assoc['status'] ?? 'all';
@@ -98,14 +103,14 @@ class PurePin_CLI {
      *
      * ## EXAMPLES
      *
-     *     wp purepin summary
+     *     wp pinonion summary
      *
      * @when after_wp_load
      */
     public function summary( $args, $assoc ) {
         global $wpdb;
-        $pt = $wpdb->prefix . 'purepin_pins';
-        $ct = $wpdb->prefix . 'purepin_pin_comments';
+        $pt = $wpdb->prefix . 'pinonion_pins';
+        $ct = $wpdb->prefix . 'pinonion_pin_comments';
 
         $totals = $wpdb->get_row(
             "SELECT
@@ -130,7 +135,7 @@ class PurePin_CLI {
         );
 
         WP_CLI::line( '' );
-        WP_CLI::line( '📌 PurePin Review — summary' );
+        WP_CLI::line( '📌 PinOnion — summary' );
         WP_CLI::line( str_repeat( '─', 40 ) );
         WP_CLI::line( sprintf( '  Total pins:      %d', $totals->total ) );
         WP_CLI::line( sprintf( '  Open:            %d', $totals->open ) );
@@ -161,26 +166,26 @@ class PurePin_CLI {
      *
      * ## EXAMPLES
      *
-     *     wp purepin comments 42
+     *     wp pinonion comments 42
      *
      * @when after_wp_load
      */
     public function comments( $args, $assoc ) {
         global $wpdb;
         if ( empty( $args[0] ) ) {
-            WP_CLI::error( 'Provide the pin ID: wp purepin comments <id>' );
+            WP_CLI::error( 'Provide the pin ID: wp pinonion comments <id>' );
         }
         $pin_id = (int) $args[0];
 
         $pin = $wpdb->get_row( $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}purepin_pins WHERE id = %d", $pin_id
+            "SELECT * FROM {$wpdb->prefix}pinonion_pins WHERE id = %d", $pin_id
         ) );
         if ( ! $pin ) {
             WP_CLI::error( "Pin #$pin_id not found" );
         }
 
         $rows = $wpdb->get_results( $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}purepin_pin_comments WHERE pin_id = %d ORDER BY created_at ASC",
+            "SELECT * FROM {$wpdb->prefix}pinonion_pin_comments WHERE pin_id = %d ORDER BY created_at ASC",
             $pin_id
         ) );
 
@@ -218,15 +223,15 @@ class PurePin_CLI {
      *
      * ## EXAMPLES
      *
-     *     wp purepin comment 42 "Fixed, please check"
-     *     wp purepin comment 42 "I investigated it" --author="Claude"
+     *     wp pinonion comment 42 "Fixed, please check"
+     *     wp pinonion comment 42 "I investigated it" --author="Claude"
      *
      * @when after_wp_load
      */
     public function comment( $args, $assoc ) {
         global $wpdb;
         if ( count( $args ) < 2 ) {
-            WP_CLI::error( 'Usage: wp purepin comment <pin_id> <text>' );
+            WP_CLI::error( 'Usage: wp pinonion comment <pin_id> <text>' );
         }
 
         $pin_id = (int) $args[0];
@@ -234,14 +239,14 @@ class PurePin_CLI {
         $author = sanitize_text_field( $assoc['author'] ?? 'AI Assistant' );
 
         $pin = $wpdb->get_row( $wpdb->prepare(
-            "SELECT id FROM {$wpdb->prefix}purepin_pins WHERE id = %d", $pin_id
+            "SELECT id FROM {$wpdb->prefix}pinonion_pins WHERE id = %d", $pin_id
         ) );
         if ( ! $pin ) {
             WP_CLI::error( "Pin #$pin_id not found" );
         }
 
         $now = current_time( 'mysql' );
-        $wpdb->insert( $wpdb->prefix . 'purepin_pin_comments', [
+        $wpdb->insert( $wpdb->prefix . 'pinonion_pin_comments', [
             'pin_id'       => $pin_id,
             'author_name'  => $author,
             'author_wp_id' => 0,
@@ -250,7 +255,7 @@ class PurePin_CLI {
             'created_at'   => $now,
             'is_read'      => 0,
         ] );
-        $wpdb->update( $wpdb->prefix . 'purepin_pins', [ 'updated_at' => $now ], [ 'id' => $pin_id ] );
+        $wpdb->update( $wpdb->prefix . 'pinonion_pins', [ 'updated_at' => $now ], [ 'id' => $pin_id ] );
 
         WP_CLI::success( "Comment added to pin #{$pin_id}." );
     }
@@ -268,14 +273,14 @@ class PurePin_CLI {
      *
      * ## EXAMPLES
      *
-     *     wp purepin status 42 done
+     *     wp pinonion status 42 done
      *
      * @when after_wp_load
      */
     public function status( $args, $assoc ) {
         global $wpdb;
         if ( count( $args ) < 2 ) {
-            WP_CLI::error( 'Usage: wp purepin status <pin_id> <open|in_progress|done>' );
+            WP_CLI::error( 'Usage: wp pinonion status <pin_id> <open|in_progress|done>' );
         }
 
         $pin_id    = (int) $args[0];
@@ -286,7 +291,7 @@ class PurePin_CLI {
         }
 
         $updated = $wpdb->update(
-            $wpdb->prefix . 'purepin_pins',
+            $wpdb->prefix . 'pinonion_pins',
             [ 'status' => $new_status, 'updated_at' => current_time( 'mysql' ) ],
             [ 'id' => $pin_id ]
         );

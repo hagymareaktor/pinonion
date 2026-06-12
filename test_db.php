@@ -1,8 +1,8 @@
 <?php
-require_once 'C:\Users\peti\Local Sites\purepin\app\public\wp-load.php';
+require_once 'C:\Users\peti\Local Sites\pinonion\app\public\wp-load.php';
 global $wpdb;
 
-$pt = $wpdb->prefix . 'purepin_pins';
+$pt = $wpdb->prefix . 'pinonion_pins';
 
 $now = current_time( 'mysql' );
 $res = $wpdb->insert( $pt, [
