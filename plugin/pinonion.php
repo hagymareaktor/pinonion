@@ -5,7 +5,6 @@
  * Description: Lets your clients drop pins and leave feedback directly on any element of your live WordPress site for lightning-fast revisions.
  * Version:     0.9.1
  * Author:      onionreactor
- * Author URI:  https://pinonion.com
  * License:     GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: pinonion
