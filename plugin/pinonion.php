@@ -199,7 +199,7 @@ function pinonion_enqueue() {
 
 // ─── Plugin list: Settings link ──────────────────────────────────────────
 
-add_filter( 'plugin_action_links_pinonion/pinonion.php', 'pinonion_action_links' );
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'pinonion_action_links' );
 
 function pinonion_action_links( $links ) {
     $settings_link = '<a href="' . admin_url( 'options-general.php?page=pinonion' ) . '">' . __( 'Settings', 'pinonion' ) . '</a>';
