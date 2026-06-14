@@ -118,6 +118,7 @@ class PinOnion_CLI {
         $pt = $wpdb->prefix . 'pinonion_pins';
         $ct = $wpdb->prefix . 'pinonion_pin_comments';
 
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $totals = $wpdb->get_row(
             "SELECT
                 COUNT(*)                                    AS total,
@@ -139,6 +140,7 @@ class PinOnion_CLI {
              GROUP BY page_url
              ORDER BY open_pins DESC"
         );
+        // phpcs:enable
 
         WP_CLI::line( '' );
         WP_CLI::line( '📌 PinOnion — summary' );

@@ -6,7 +6,7 @@
  * Author:      onionreactor
  * License:     GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: pinonion
+ * Text Domain: purepin-review
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -82,18 +82,18 @@ add_action( 'plugins_loaded', 'pinonion_maybe_upgrade' );
 
 function pinonion_add_column_if_missing( $table, $column, $definition ) {
     global $wpdb;
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
     if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$table` LIKE '$column'" ) ) ) {
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $wpdb->query( "ALTER TABLE `$table` ADD COLUMN `$column` $definition" );
     }
 }
 
 function pinonion_add_index_if_missing( $table, $index_name, $column_name ) {
     global $wpdb;
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
     if ( empty( $wpdb->get_results( "SHOW INDEX FROM `$table` WHERE Key_name = '$index_name'" ) ) ) {
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $wpdb->query( "ALTER TABLE `$table` ADD INDEX `$index_name` (`$column_name`)" );
     }
 }
@@ -180,19 +180,19 @@ function pinonion_enqueue() {
         'clientCanClose'     => pinonion_opt( 'client_can_close' ) === '1',
         'fabPosition'        => pinonion_opt( 'fab_position' ) ?: 'right',
         'strings'            => [
-            'newPin'          => __( 'New pin', 'pinonion' ),
-            'namePlaceholder' => __( 'Your name…', 'pinonion' ),
-            'descPlaceholder' => __( 'Description… what should we pay attention to?', 'pinonion' ),
-            'urgent'          => __( 'Urgent task', 'pinonion' ),
-            'pinPlaceLabel'   => __( 'Create a new review', 'pinonion' ),
-            'filterUnread'    => __( 'Unread comments', 'pinonion' ),
-            'filterNew'       => __( 'New pins', 'pinonion' ),
-            'tabOpen'         => __( 'Open', 'pinonion' ),
-            'tabInProgress'   => __( 'In progress', 'pinonion' ),
-            'tabDone'         => __( 'Done', 'pinonion' ),
-            'statusOpen'      => __( 'Open', 'pinonion' ),
-            'statusInProgress'=> __( 'In Progress', 'pinonion' ),
-            'statusDone'      => __( 'Done', 'pinonion' ),
+            'newPin'          => __( 'New pin', 'purepin-review' ),
+            'namePlaceholder' => __( 'Your name…', 'purepin-review' ),
+            'descPlaceholder' => __( 'Description… what should we pay attention to?', 'purepin-review' ),
+            'urgent'          => __( 'Urgent task', 'purepin-review' ),
+            'pinPlaceLabel'   => __( 'Create a new review', 'purepin-review' ),
+            'filterUnread'    => __( 'Unread comments', 'purepin-review' ),
+            'filterNew'       => __( 'New pins', 'purepin-review' ),
+            'tabOpen'         => __( 'Open', 'purepin-review' ),
+            'tabInProgress'   => __( 'In progress', 'purepin-review' ),
+            'tabDone'         => __( 'Done', 'purepin-review' ),
+            'statusOpen'      => __( 'Open', 'purepin-review' ),
+            'statusInProgress'=> __( 'In Progress', 'purepin-review' ),
+            'statusDone'      => __( 'Done', 'purepin-review' ),
         ],
     ] );
 }
@@ -202,7 +202,7 @@ function pinonion_enqueue() {
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'pinonion_action_links' );
 
 function pinonion_action_links( $links ) {
-    $settings_link = '<a href="' . admin_url( 'options-general.php?page=pinonion' ) . '">' . __( 'Settings', 'pinonion' ) . '</a>';
+    $settings_link = '<a href="' . admin_url( 'options-general.php?page=pinonion' ) . '">' . __( 'Settings', 'purepin-review' ) . '</a>';
     array_unshift( $links, $settings_link );
     return $links;
 }
