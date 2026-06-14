@@ -1221,14 +1221,20 @@
     popup.querySelector('#pp-rv-popup-x').addEventListener('click', closePopup);
 
     // Popup navigation
-    const navPins = filteredPins(true).filter(p => p.status !== 'done');
+    const isDone = pin.status === 'done';
+    const navPins = filteredPins(true).filter(p => isDone ? p.status === 'done' : p.status !== 'done');
     const idx  = navPins.findIndex(p => String(p.id) === String(pinId));
     const navInfo = popup.querySelector('#pp-rv-popup-nav-info');
-    if (navInfo) navInfo.textContent = navPins.length ? `${idx + 1} / ${navPins.length}` : '–';
-    // Disable buttons if nowhere to navigate
-    if (navPins.length <= 1) {
+    if (idx === -1) {
+      if (navInfo) navInfo.textContent = '1 / 1';
       popup.querySelector('#pp-rv-popup-prev')?.setAttribute('disabled', '');
       popup.querySelector('#pp-rv-popup-next')?.setAttribute('disabled', '');
+    } else {
+      if (navInfo) navInfo.textContent = `${idx + 1} / ${navPins.length}`;
+      if (navPins.length <= 1) {
+        popup.querySelector('#pp-rv-popup-prev')?.setAttribute('disabled', '');
+        popup.querySelector('#pp-rv-popup-next')?.setAttribute('disabled', '');
+      }
     }
     popup.querySelector('#pp-rv-popup-prev')?.addEventListener('click', e => { e.stopPropagation(); navigatePin(-1); });
     popup.querySelector('#pp-rv-popup-next')?.addEventListener('click', e => { e.stopPropagation(); navigatePin(1); });
@@ -1342,7 +1348,6 @@
         try {
           await api('POST', `pins/${pinId}/unread`);
           pin.unread_count = pin.comment_count || 1; // Mark as unread locally
-          state.unreadCounts[pinId] = pin.unread_count;
           renderMarkers();
           renderList();
           updateBadge();
@@ -1789,7 +1794,7 @@
       <div class="pp-rv-tabs" id="pp-rv-tabs">
         <button class="pp-rv-tab${state.activeTab === 'open'        ? ' active' : ''}" data-tab="open">${cfg.strings.tabOpen} <span class="pp-rv-tab-count" id="pp-rv-tab-count-open"></span></button>
         <button class="pp-rv-tab${state.activeTab === 'in_progress' ? ' active' : ''}" data-tab="in_progress">${cfg.strings.tabInProgress} <span class="pp-rv-tab-count" id="pp-rv-tab-count-in_progress"></span></button>
-        <button class="pp-rv-tab${state.activeTab === 'done'        ? ' active' : ''}" data-tab="done">${cfg.strings.tabDone}</button>
+        <button class="pp-rv-tab${state.activeTab === 'done'        ? ' active' : ''}" data-tab="done">${cfg.strings.tabDone} <span class="pp-rv-tab-count" id="pp-rv-tab-count-done"></span></button>
       </div>
       <div class="pp-rv-pin-list" id="pp-rv-pin-list"></div>
       `;

@@ -86,12 +86,13 @@ function pinonion_is_client( $user_id = null ) {
 add_action( 'admin_menu', 'pinonion_admin_menu' );
 
 function pinonion_admin_menu() {
-    add_options_page(
+    add_menu_page(
         __( 'PinOnion Settings', 'pinonion' ),
         'PinOnion',
         'manage_options',
         'pinonion',
-        'pinonion_settings_page'
+        'pinonion_settings_page',
+        'dashicons-location-alt'
     );
 }
 
