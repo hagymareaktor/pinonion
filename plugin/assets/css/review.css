@@ -1123,6 +1123,7 @@ body.pp-rv-add-mode .pp-rv-acb-btn { cursor: pointer !important; }
 .pp-rv-pin-item--new .pp-rv-unread-msg { color: #818cf8; }
 
 /* Pin item – fontos kiemelés eltávolítva kérésre */
+
 /* Actions row (star + done button) */
 .pp-rv-pin-item-actions {
   display: flex;
