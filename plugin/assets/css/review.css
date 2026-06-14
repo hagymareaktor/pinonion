@@ -1889,13 +1889,11 @@ body.pp-rv-add-mode .pp-rv-acb-btn { cursor: pointer !important; }
   max-height: 76px;
   overflow: hidden;
   position: relative;
-  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
 }
 
 .pp-rv-comment-body.pp-rv-collapsible.pp-rv-expanded {
   max-height: none;
-  -webkit-mask-image: none;
   mask-image: none;
 }
 
