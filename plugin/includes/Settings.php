@@ -3,7 +3,9 @@
  * PinOnion – Settings (Settings API)
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 // ─── Defaults & Helpers ──────────────────────────────────────────────────────
 
@@ -24,35 +26,57 @@ function pinonion_opt( $key ) {
 }
 
 function pinonion_is_developer( $user_id = null ) {
-    if ( ! $user_id ) $user_id = get_current_user_id();
-    if ( ! $user_id ) return false;
+    if ( ! $user_id ) {
+        $user_id = get_current_user_id();
+    }
+    if ( ! $user_id ) {
+        return false;
+    }
     
-    if ( is_super_admin( $user_id ) ) return true;
+    if ( is_super_admin( $user_id ) ) {
+        return true;
+    }
 
     $user = get_userdata( $user_id );
-    if ( ! $user ) return false;
+    if ( ! $user ) {
+        return false;
+    }
 
     $dev_roles = pinonion_opt( 'developer_roles' );
-    if ( ! is_array( $dev_roles ) ) $dev_roles = [];
+    if ( ! is_array( $dev_roles ) ) {
+        $dev_roles = [];
+    }
 
     foreach ( $user->roles as $role ) {
-        if ( in_array( $role, $dev_roles, true ) ) return true;
+        if ( in_array( $role, $dev_roles, true ) ) {
+            return true;
+        }
     }
     return false;
 }
 
 function pinonion_is_client( $user_id = null ) {
-    if ( ! $user_id ) $user_id = get_current_user_id();
-    if ( ! $user_id ) return false;
+    if ( ! $user_id ) {
+        $user_id = get_current_user_id();
+    }
+    if ( ! $user_id ) {
+        return false;
+    }
 
     $user = get_userdata( $user_id );
-    if ( ! $user ) return false;
+    if ( ! $user ) {
+        return false;
+    }
 
     $client_roles = pinonion_opt( 'client_roles' );
-    if ( ! is_array( $client_roles ) ) $client_roles = [];
+    if ( ! is_array( $client_roles ) ) {
+        $client_roles = [];
+    }
 
     foreach ( $user->roles as $role ) {
-        if ( in_array( $role, $client_roles, true ) ) return true;
+        if ( in_array( $role, $client_roles, true ) ) {
+            return true;
+        }
     }
     return false;
 }
@@ -97,7 +121,9 @@ function pinonion_sanitize_settings( $input ) {
 
 function pinonion_field_roles( $key, $desc ) {
     $val = pinonion_opt( $key );
-    if ( ! is_array( $val ) ) $val = [];
+    if ( ! is_array( $val ) ) {
+        $val = [];
+    }
     $roles = wp_roles()->get_names();
     
     echo '<div style="max-height: 180px; overflow-y: auto; padding: 12px; border: 1px solid #c3c4c7; background: #fff; width: 320px; border-radius: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);">';
@@ -130,7 +156,9 @@ function pinonion_admin_enqueue( $hook ) {
 // ─── Settings page HTML ──────────────────────────────────────────────────────
 
 function pinonion_settings_page() {
-    if ( ! current_user_can( 'manage_options' ) ) return;
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
 
     // phpcs:ignore WordPress.Security.NonceVerification.Recommended
     $active = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'permissions';

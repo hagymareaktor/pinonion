@@ -3,7 +3,9 @@
  * REST API endpoints for the PinOnion plugin.
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 add_action( 'rest_api_init', 'pinonion_register_routes' );
 
@@ -51,7 +53,9 @@ function pinonion_can_manage() {
 }
 
 function pinonion_can_access() {
-    if ( ! is_user_logged_in() ) return false;
+    if ( ! is_user_logged_in() ) {
+        return false;
+    }
     return pinonion_is_developer() || pinonion_is_client();
 }
 
@@ -169,9 +173,67 @@ function pinonion_get_pin( WP_REST_Request $req ) {
     return rest_ensure_response( $pin );
 }
 
+function pinonion_check_update_permission( $pin_id, $status ) {
+    global $wpdb;
+    $is_dev = pinonion_is_developer();
+
+    if ( ! $is_dev ) {
+        $can_client_close = pinonion_opt( 'client_can_close' ) === '1';
+
+        if ( ! $can_client_close ) {
+            return new WP_Error( 'forbidden', __( 'You do not have permission to change the status.', 'pinonion' ), [ 'status' => 403 ] );
+        }
+
+        // If they can close it, check if it's theirs
+        $pin_row = $wpdb->get_row( $wpdb->prepare(
+                "SELECT author_wp_id FROM {$wpdb->prefix}pinonion_pins WHERE id = %d",
+                (int) $pin_id
+            ) );
+        $current_uid = get_current_user_id();
+        $is_owner    = $current_uid && $pin_row && (int) $pin_row->author_wp_id === $current_uid;
+
+        if ( ! $is_owner ) {
+            return new WP_Error( 'forbidden', __( 'You can only change the status of your own pins.', 'pinonion' ), [ 'status' => 403 ] );
+        }
+        if ( ! in_array( $status, [ 'open', 'done' ], true ) ) {
+            return new WP_Error( 'forbidden', __( 'You can only set the status to Open or Done.', 'pinonion' ), [ 'status' => 403 ] );
+        }
+    }
+    return true;
+}
+
+function pinonion_log_pin_event( $pin_id, $status, $author_name, $author_wpid, $old_status, $updated_at ) {
+    global $wpdb;
+    if ( ! $author_name ) {
+        return;
+    }
+    $events = [];
+    if ( $status && $status !== $old_status ) {
+        $labels  = [
+            'open'        => __( 'Open', 'pinonion' ),
+            'in_progress' => __( 'In Progress', 'pinonion' ),
+            'done'        => __( 'Done', 'pinonion' ),
+        ];
+        /* translators: 1: old status label, 2: new status label */
+        $events[] = sprintf( __( 'Status: %1$s → %2$s', 'pinonion' ), $labels[ $old_status ] ?? $old_status, $labels[ $status ] ?? $status );
+    }
+    foreach ( $events as $ev ) {
+        $wpdb->insert( $wpdb->prefix . 'pinonion_pin_comments', [
+            'pin_id'       => (int) $pin_id,
+            'author_name'  => $author_name,
+            'author_wp_id' => $author_wpid,
+            'content'      => $ev,
+            'type'         => 'event',
+            'created_at'   => $updated_at,
+            'is_read'      => 1,
+        ] );
+    }
+}
+
 function pinonion_update_pin( WP_REST_Request $req ) {
     global $wpdb;
     $data        = [];
+    $pin_id      = (int) $req['id'];
     $status      = sanitize_text_field( $req->get_param( 'status' ) );
     $important   = $req->get_param( 'important' );
     
@@ -181,29 +243,9 @@ function pinonion_update_pin( WP_REST_Request $req ) {
 
     // ── Status permission ──────────────────────────────────────────────────
     if ( $status ) {
-        $is_dev = pinonion_is_developer();
-
-        if ( ! $is_dev ) {
-            $can_client_close = pinonion_opt( 'client_can_close' ) === '1';
-
-            if ( ! $can_client_close ) {
-                return new WP_Error( 'forbidden', __( 'You do not have permission to change the status.', 'pinonion' ), [ 'status' => 403 ] );
-            }
-
-            // If they can close it, check if it's theirs
-            $pin_row = $wpdb->get_row( $wpdb->prepare(
-                    "SELECT author_wp_id FROM {$wpdb->prefix}pinonion_pins WHERE id = %d",
-                    (int) $req['id']
-                ) );
-                $current_uid = get_current_user_id();
-                $is_owner    = $current_uid && $pin_row && (int) $pin_row->author_wp_id === $current_uid;
-
-                if ( ! $is_owner ) {
-                    return new WP_Error( 'forbidden', __( 'You can only change the status of your own pins.', 'pinonion' ), [ 'status' => 403 ] );
-                }
-                if ( ! in_array( $status, [ 'open', 'done' ], true ) ) {
-                    return new WP_Error( 'forbidden', __( 'You can only set the status to Open or Done.', 'pinonion' ), [ 'status' => 403 ] );
-                }
+        $perm_check = pinonion_check_update_permission( $pin_id, $status );
+        if ( is_wp_error( $perm_check ) ) {
+            return $perm_check;
         }
     }
 
@@ -237,34 +279,14 @@ function pinonion_update_pin( WP_REST_Request $req ) {
     // Old values for the event log
     $pin = $wpdb->get_row( $wpdb->prepare(
         "SELECT status, important FROM {$wpdb->prefix}pinonion_pins WHERE id = %d",
-        (int) $req['id']
+        $pin_id
     ) );
 
     $data['updated_at'] = current_time( 'mysql' );
-    $wpdb->update( $wpdb->prefix . 'pinonion_pins', $data, [ 'id' => (int) $req['id'] ] );
+    $wpdb->update( $wpdb->prefix . 'pinonion_pins', $data, [ 'id' => $pin_id ] );
 
-    if ( $author_name && $pin ) {
-        $events = [];
-        if ( $status && $status !== $pin->status ) {
-            $labels  = [
-                'open'        => __( 'Open', 'pinonion' ),
-                'in_progress' => __( 'In Progress', 'pinonion' ),
-                'done'        => __( 'Done', 'pinonion' ),
-            ];
-            /* translators: 1: old status label, 2: new status label */
-            $events[] = sprintf( __( 'Status: %1$s → %2$s', 'pinonion' ), $labels[ $pin->status ] ?? $pin->status, $labels[ $status ] ?? $status );
-        }
-        foreach ( $events as $ev ) {
-            $wpdb->insert( $wpdb->prefix . 'pinonion_pin_comments', [
-                'pin_id'       => (int) $req['id'],
-                'author_name'  => $author_name,
-                'author_wp_id' => $author_wpid,
-                'content'      => $ev,
-                'type'         => 'event',
-                'created_at'   => $data['updated_at'],
-                'is_read'      => 1,
-            ] );
-        }
+    if ( $pin ) {
+        pinonion_log_pin_event( $pin_id, $status, $author_name, $author_wpid, $pin->status, $data['updated_at'] );
     }
 
     return rest_ensure_response( [ 'updated' => true ] );

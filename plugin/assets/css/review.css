@@ -428,7 +428,7 @@ body.pp-rv-add-mode .pp-rv-acb-btn { cursor: pointer !important; }
   min-width: 18px;
   height: 18px;
   border-radius: 9px;
-  background: #ef4444;
+  background: #b91c1c;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -457,7 +457,7 @@ body.pp-rv-add-mode .pp-rv-acb-btn { cursor: pointer !important; }
   min-width: 18px;
   height: 18px;
   border-radius: 9px;
-  background: #ef4444;
+  background: #b91c1c;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -769,7 +769,7 @@ body.pp-rv-add-mode .pp-rv-acb-btn { cursor: pointer !important; }
 }
 .pp-rv-dd-opt--unread { color: #fca5a5; font-weight: 600; }
 .pp-rv-dd-opt--unread:hover { background: #2d1515; }
-.pp-rv-unread-dot-sm { color: #ef4444; font-size: 10px; }
+.pp-rv-unread-dot-sm { color: #b91c1c; font-size: 10px; }
 
 .pp-rv-status-dot {
   width: 8px;

@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  const cfg = window.purePinReview;
+  const cfg = window.pinonionReview;
   if (!cfg) return;
 
   /* ── State ─────────────────────────────────────────────────────────────── */

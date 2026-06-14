@@ -3,7 +3,7 @@ Contributors: onionreactor
 Tags: review, feedback, client feedback, design, collaboration
 Requires at least: 6.0
 Tested up to: 7.0
-Stable tag: 0.9.1
+Stable tag: 0.9.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -12,7 +12,7 @@ Lets your clients drop pins and leave feedback directly on any element of your l
 
 == Description ==
 
-**Currently in Open Beta (v0.9.1)**
+**Currently in Open Beta (v0.9.2)**
 We are currently in an open beta phase! This means the plugin is completely free to use without limitations while we gather feedback from the community for our upcoming v1.0 release. Try it out, and please let us know what features you'd like to see!
 
 PinOnion is a visual feedback tool that allows you and your clients to drop feedback pins directly onto any element of your live WordPress website. Stop wasting time with spreadsheets and endless email chains.
@@ -34,7 +34,7 @@ Key Features:
 
 = Is this plugin free? =
 
-Currently, PinOnion Website Review is in an Open Beta phase (v0.9.1), meaning all features are 100% free with no limitations. In the future, a premium/Pro version with advanced features will be introduced, but a robust free version will always remain available here.
+Currently, PinOnion Website Review is in an Open Beta phase (v0.9.2), meaning all features are 100% free with no limitations. In the future, a premium/Pro version with advanced features will be introduced, but a robust free version will always remain available here.
 
 = Can guest users leave feedback? =
 
@@ -76,6 +76,10 @@ The source code and development files for this plugin are publicly available.
 GitHub Repository: https://github.com/hagymareaktor/pinonion.git
 
 == Changelog ==
+
+= 0.9.2 =
+* Fix: Removed invalid Plugin URI from header.
+* Fix: Updated JavaScript localization object name to use the correct plugin prefix to comply with WordPress.org guidelines.
 
 = 0.9.1 =
 * Renamed plugin to PinOnion Website Review to resolve trademark issues.

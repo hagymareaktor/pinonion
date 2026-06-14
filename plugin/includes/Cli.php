@@ -9,8 +9,12 @@
  * phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit;
-if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) return;
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
+    return;
+}
 
 WP_CLI::add_command( 'pinonion', 'PinOnion_CLI' );
 
@@ -41,7 +45,7 @@ class PinOnion_CLI {
      *
      * @when after_wp_load
      */
-    public function list( $args, $assoc ) {
+    public function list( $_args, $assoc ) {
         global $wpdb;
         $pt = $wpdb->prefix . 'pinonion_pins';
         $ct = $wpdb->prefix . 'pinonion_pin_comments';
@@ -107,7 +111,7 @@ class PinOnion_CLI {
      *
      * @when after_wp_load
      */
-    public function summary( $args, $assoc ) {
+    public function summary( $_args, $_assoc ) {
         global $wpdb;
         $pt = $wpdb->prefix . 'pinonion_pins';
         $ct = $wpdb->prefix . 'pinonion_pin_comments';
@@ -170,7 +174,7 @@ class PinOnion_CLI {
      *
      * @when after_wp_load
      */
-    public function comments( $args, $assoc ) {
+    public function comments( $args, $_assoc ) {
         global $wpdb;
         if ( empty( $args[0] ) ) {
             WP_CLI::error( 'Provide the pin ID: wp pinonion comments <id>' );
@@ -277,7 +281,7 @@ class PinOnion_CLI {
      *
      * @when after_wp_load
      */
-    public function status( $args, $assoc ) {
+    public function status( $args, $_assoc ) {
         global $wpdb;
         if ( count( $args ) < 2 ) {
             WP_CLI::error( 'Usage: wp pinonion status <pin_id> <open|in_progress|done>' );

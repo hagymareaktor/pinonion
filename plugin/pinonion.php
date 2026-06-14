@@ -1,18 +1,19 @@
 <?php
 /**
  * Plugin Name: PinOnion Website Review
- * Plugin URI:  https://pinonion.com
  * Description: Lets your clients drop pins and leave feedback directly on any element of your live WordPress site for lightning-fast revisions.
- * Version:     0.9.1
+ * Version:     0.9.2
  * Author:      onionreactor
  * License:     GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: pinonion
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
-define( 'PINONION_VERSION', '0.9.0' );
+define( 'PINONION_VERSION', '0.9.2' );
 define( 'PINONION_DIR',       plugin_dir_path( __FILE__ ) );
 define( 'PINONION_URL',       plugin_dir_url( __FILE__ ) );
 define( 'PINONION_MAIN_FILE', __FILE__ );
@@ -79,6 +80,24 @@ define( 'PINONION_DB_VERSION', '4' );
 
 add_action( 'plugins_loaded', 'pinonion_maybe_upgrade' );
 
+function pinonion_add_column_if_missing( $table, $column, $definition ) {
+    global $wpdb;
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$table` LIKE '$column'" ) ) ) {
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $wpdb->query( "ALTER TABLE `$table` ADD COLUMN `$column` $definition" );
+    }
+}
+
+function pinonion_add_index_if_missing( $table, $index_name, $column_name ) {
+    global $wpdb;
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    if ( empty( $wpdb->get_results( "SHOW INDEX FROM `$table` WHERE Key_name = '$index_name'" ) ) ) {
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $wpdb->query( "ALTER TABLE `$table` ADD INDEX `$index_name` (`$column_name`)" );
+    }
+}
+
 function pinonion_maybe_upgrade() {
     if ( get_option( 'pinonion_db_version' ) === PINONION_DB_VERSION ) {
         return;
@@ -88,45 +107,21 @@ function pinonion_maybe_upgrade() {
     $pt = $wpdb->prefix . 'pinonion_pins';
     $ct = $wpdb->prefix . 'pinonion_pin_comments';
 
-    // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$ct` LIKE 'type'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$ct` ADD COLUMN `type` VARCHAR(20) NOT NULL DEFAULT 'comment' AFTER `is_read`" );
-    }
-    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'important'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `important` TINYINT(1) NOT NULL DEFAULT 0 AFTER `status`" );
-    }
-    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'is_fixed'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `is_fixed` TINYINT(1) NOT NULL DEFAULT 0 AFTER `important`" );
-    }
-    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'description'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `description` TEXT NOT NULL AFTER `author_wp_id`" );
-    }
-    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'viewport_width'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `viewport_width` SMALLINT NOT NULL DEFAULT 0 AFTER `description`" );
-    }
-    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'css_selector'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `css_selector` VARCHAR(500) NOT NULL DEFAULT '' AFTER `viewport_width`" );
-    }
-    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'scroll_context'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `scroll_context` TEXT NOT NULL DEFAULT '' AFTER `css_selector`" );
-    }
-    if ( empty( $wpdb->get_results( "SHOW COLUMNS FROM `$pt` LIKE 'description_updated_at'" ) ) ) {
-        $wpdb->query( "ALTER TABLE `$pt` ADD COLUMN `description_updated_at` DATETIME DEFAULT NULL AFTER `updated_at`" );
-    }
+    pinonion_add_column_if_missing( $ct, 'type', "VARCHAR(20) NOT NULL DEFAULT 'comment' AFTER `is_read`" );
+    pinonion_add_column_if_missing( $pt, 'important', "TINYINT(1) NOT NULL DEFAULT 0 AFTER `status`" );
+    pinonion_add_column_if_missing( $pt, 'is_fixed', "TINYINT(1) NOT NULL DEFAULT 0 AFTER `important`" );
+    pinonion_add_column_if_missing( $pt, 'description', "TEXT NOT NULL AFTER `author_wp_id`" );
+    pinonion_add_column_if_missing( $pt, 'viewport_width', "SMALLINT NOT NULL DEFAULT 0 AFTER `description`" );
+    pinonion_add_column_if_missing( $pt, 'css_selector', "VARCHAR(500) NOT NULL DEFAULT '' AFTER `viewport_width`" );
+    pinonion_add_column_if_missing( $pt, 'scroll_context', "TEXT NOT NULL DEFAULT '' AFTER `css_selector`" );
+    pinonion_add_column_if_missing( $pt, 'description_updated_at', "DATETIME DEFAULT NULL AFTER `updated_at`" );
 
     // V4 Indexes
     if ( get_option( 'pinonion_db_version' ) < '4' ) {
-        if ( empty( $wpdb->get_results( "SHOW INDEX FROM `$pt` WHERE Key_name = 'status'" ) ) ) {
-            $wpdb->query( "ALTER TABLE `$pt` ADD INDEX `status` (`status`)" );
-        }
-        if ( empty( $wpdb->get_results( "SHOW INDEX FROM `$pt` WHERE Key_name = 'author_wp_id'" ) ) ) {
-            $wpdb->query( "ALTER TABLE `$pt` ADD INDEX `author_wp_id` (`author_wp_id`)" );
-        }
-        if ( empty( $wpdb->get_results( "SHOW INDEX FROM `$ct` WHERE Key_name = 'is_read'" ) ) ) {
-            $wpdb->query( "ALTER TABLE `$ct` ADD INDEX `is_read` (`is_read`)" );
-        }
+        pinonion_add_index_if_missing( $pt, 'status', 'status' );
+        pinonion_add_index_if_missing( $pt, 'author_wp_id', 'author_wp_id' );
+        pinonion_add_index_if_missing( $ct, 'is_read', 'is_read' );
     }
-    // phpcs:enable
 
     update_option( 'pinonion_db_version', PINONION_DB_VERSION );
 }
@@ -171,7 +166,7 @@ function pinonion_enqueue() {
     );
 
     $user = wp_get_current_user();
-    wp_localize_script( 'pinonion', 'purePinReview', [
+    wp_localize_script( 'pinonion', 'pinonionReview', [
         'apiUrl'             => rest_url( 'pinonion/v1/' ),
         'nonce'              => wp_create_nonce( 'wp_rest' ),
         'pageUrl'            => trailingslashit( esc_url( home_url( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ) ) ) ) ),
