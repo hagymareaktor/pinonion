@@ -46,6 +46,7 @@ class PinOnion_CLI {
      * @when after_wp_load
      */
     public function list( $_args, $assoc ) {
+        unset( $_args );
         global $wpdb;
         $pt = $wpdb->prefix . 'pinonion_pins';
         $ct = $wpdb->prefix . 'pinonion_pin_comments';
@@ -112,6 +113,7 @@ class PinOnion_CLI {
      * @when after_wp_load
      */
     public function summary( $_args, $_assoc ) {
+        unset( $_args, $_assoc );
         global $wpdb;
         $pt = $wpdb->prefix . 'pinonion_pins';
         $ct = $wpdb->prefix . 'pinonion_pin_comments';
@@ -175,6 +177,7 @@ class PinOnion_CLI {
      * @when after_wp_load
      */
     public function comments( $args, $_assoc ) {
+        unset( $_assoc );
         global $wpdb;
         if ( empty( $args[0] ) ) {
             WP_CLI::error( 'Provide the pin ID: wp pinonion comments <id>' );
@@ -282,6 +285,7 @@ class PinOnion_CLI {
      * @when after_wp_load
      */
     public function status( $args, $_assoc ) {
+        unset( $_assoc );
         global $wpdb;
         if ( count( $args ) < 2 ) {
             WP_CLI::error( 'Usage: wp pinonion status <pin_id> <open|in_progress|done>' );

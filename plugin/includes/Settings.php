@@ -193,20 +193,20 @@ function pinonion_settings_page() {
                 <div class="pp-card">
                     <h3><?php esc_html_e( 'Developer Roles', 'pinonion' ); ?></h3>
                     <div class="pp-field">
-                        <?php 
-                        pinonion_field_roles( 'developer_roles', 
+                        <?php
+                        pinonion_field_roles( 'developer_roles',
                             __( 'Users with these roles can view all pins across the site, change any pin\'s status, delete pins, and manage comments. (Typically Administrator, Editor, etc.)', 'pinonion' )
-                        ); 
+                        );
                         ?>
                     </div>
                 </div>
                 <div class="pp-card">
                     <h3><?php esc_html_e( 'Client / Customer Roles', 'pinonion' ); ?></h3>
                     <div class="pp-field">
-                        <?php 
-                        pinonion_field_roles( 'client_roles', 
+                        <?php
+                        pinonion_field_roles( 'client_roles',
                             __( 'Users with these roles can use the PinOnion tool to drop pins and add comments, but they will <strong>only see their own pins</strong>. (Typically Subscriber, Customer, etc.)', 'pinonion' )
-                        ); 
+                        );
                         ?>
                     </div>
                 </div>

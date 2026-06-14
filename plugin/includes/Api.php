@@ -61,7 +61,7 @@ function pinonion_can_access() {
 
 // ─── Pins ───────────────────────────────────────────────────────────────────
 
-function pinonion_get_pins( WP_REST_Request $req ) {
+function pinonion_get_pins() {
     global $wpdb;
     $pt = $wpdb->prefix . 'pinonion_pins';
     $ct = $wpdb->prefix . 'pinonion_pin_comments';
@@ -93,7 +93,6 @@ function pinonion_get_pins( WP_REST_Request $req ) {
 function pinonion_create_pin( WP_REST_Request $req ) {
     global $wpdb;
     $pt = $wpdb->prefix . 'pinonion_pins';
-    $ct = $wpdb->prefix . 'pinonion_pin_comments';
 
     $page_url       = sanitize_text_field( $req->get_param( 'page_url' ) );
     $page_title     = sanitize_text_field( $req->get_param( 'page_title' ) );
