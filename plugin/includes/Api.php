@@ -110,19 +110,19 @@ function pinonion_create_pin( WP_REST_Request $req ) {
     $scroll_context = sanitize_textarea_field( $req->get_param( 'scroll_context' ) ?? '' );
 
     if ( empty( trim( $description ) ) ) {
-        return new WP_Error( 'missing', __( 'Description is required.', 'purepin-review' ), [ 'status' => 400 ] );
+        return new WP_Error( 'missing', __( 'Description is required.', 'pinonion' ), [ 'status' => 400 ] );
     }
 
     if ( mb_strlen( $description ) > 1000 ) {
-        return new WP_Error( 'too_long', __( 'Failed to save: text is too long (maximum 1000 characters).', 'purepin-review' ), [ 'status' => 400 ] );
+        return new WP_Error( 'too_long', __( 'Failed to save: text is too long (maximum 1000 characters).', 'pinonion' ), [ 'status' => 400 ] );
     }
 
     if ( mb_strlen( $css_selector ) > 2000 || mb_strlen( $scroll_context ) > 10000 || mb_strlen( $page_url ) > 2000 ) {
-        return new WP_Error( 'payload_too_large', __( 'Payload too large.', 'purepin-review' ), [ 'status' => 400 ] );
+        return new WP_Error( 'payload_too_large', __( 'Payload too large.', 'pinonion' ), [ 'status' => 400 ] );
     }
 
     if ( ! $page_url ) {
-        return new WP_Error( 'missing', __( 'Missing required fields', 'purepin-review' ), [ 'status' => 400 ] );
+        return new WP_Error( 'missing', __( 'Missing required fields', 'pinonion' ), [ 'status' => 400 ] );
     }
 
 
@@ -149,7 +149,7 @@ function pinonion_create_pin( WP_REST_Request $req ) {
     $pin_id = (int) $wpdb->insert_id;
 
     if ($pin_id === 0) {
-        return new WP_Error( 'db_error', $wpdb->last_error ?: __( 'Database error.', 'purepin-review' ), [ 'status' => 500 ] );
+        return new WP_Error( 'db_error', $wpdb->last_error ?: __( 'Database error.', 'pinonion' ), [ 'status' => 500 ] );
     }
 
     return rest_ensure_response( [ 'id' => $pin_id, 'status' => 'open', 'created_at' => $now ] );
@@ -162,11 +162,11 @@ function pinonion_get_pin( WP_REST_Request $req ) {
         (int) $req['id']
     ) );
     if ( ! $pin ) {
-        return new WP_Error( 'not_found', __( 'Not found', 'purepin-review' ), [ 'status' => 404 ] );
+        return new WP_Error( 'not_found', __( 'Not found', 'pinonion' ), [ 'status' => 404 ] );
     }
 
     if ( ! pinonion_is_developer() && (int) $pin->author_wp_id !== get_current_user_id() ) {
-        return new WP_Error( 'forbidden', __( 'You do not have permission to access this pin.', 'purepin-review' ), [ 'status' => 403 ] );
+        return new WP_Error( 'forbidden', __( 'You do not have permission to access this pin.', 'pinonion' ), [ 'status' => 403 ] );
     }
 
     return rest_ensure_response( $pin );
@@ -180,7 +180,7 @@ function pinonion_check_update_permission( $pin_id, $status ) {
         $can_client_close = pinonion_opt( 'client_can_close' ) === '1';
 
         if ( ! $can_client_close ) {
-            return new WP_Error( 'forbidden', __( 'You do not have permission to change the status.', 'purepin-review' ), [ 'status' => 403 ] );
+            return new WP_Error( 'forbidden', __( 'You do not have permission to change the status.', 'pinonion' ), [ 'status' => 403 ] );
         }
 
         // If they can close it, check if it's theirs
@@ -192,10 +192,10 @@ function pinonion_check_update_permission( $pin_id, $status ) {
         $is_owner    = $current_uid && $pin_row && (int) $pin_row->author_wp_id === $current_uid;
 
         if ( ! $is_owner ) {
-            return new WP_Error( 'forbidden', __( 'You can only change the status of your own pins.', 'purepin-review' ), [ 'status' => 403 ] );
+            return new WP_Error( 'forbidden', __( 'You can only change the status of your own pins.', 'pinonion' ), [ 'status' => 403 ] );
         }
         if ( ! in_array( $status, [ 'open', 'done' ], true ) ) {
-            return new WP_Error( 'forbidden', __( 'You can only set the status to Open or Done.', 'purepin-review' ), [ 'status' => 403 ] );
+            return new WP_Error( 'forbidden', __( 'You can only set the status to Open or Done.', 'pinonion' ), [ 'status' => 403 ] );
         }
     }
     return true;
@@ -209,12 +209,12 @@ function pinonion_log_pin_event( $pin_id, $status, $author_name, $author_wpid, $
     $events = [];
     if ( $status && $status !== $old_status ) {
         $labels  = [
-            'open'        => __( 'Open', 'purepin-review' ),
-            'in_progress' => __( 'In Progress', 'purepin-review' ),
-            'done'        => __( 'Done', 'purepin-review' ),
+            'open'        => __( 'Open', 'pinonion' ),
+            'in_progress' => __( 'In Progress', 'pinonion' ),
+            'done'        => __( 'Done', 'pinonion' ),
         ];
         /* translators: 1: old status label, 2: new status label */
-        $events[] = sprintf( __( 'Status: %1$s → %2$s', 'purepin-review' ), $labels[ $old_status ] ?? $old_status, $labels[ $status ] ?? $status );
+        $events[] = sprintf( __( 'Status: %1$s → %2$s', 'pinonion' ), $labels[ $old_status ] ?? $old_status, $labels[ $status ] ?? $status );
     }
     foreach ( $events as $ev ) {
         $wpdb->insert( $wpdb->prefix . 'pinonion_pin_comments', [
@@ -254,7 +254,7 @@ function pinonion_update_pin( WP_REST_Request $req ) {
         if ( in_array( $status, [ 'open', 'in_progress', 'done' ], true ) ) {
             $data['status'] = $status;
         } else {
-            return new WP_Error( 'invalid_status', __( 'Invalid status.', 'purepin-review' ), [ 'status' => 400 ] );
+            return new WP_Error( 'invalid_status', __( 'Invalid status.', 'pinonion' ), [ 'status' => 400 ] );
         }
     }
     if ( $important !== null && pinonion_is_developer() ) {
@@ -262,17 +262,17 @@ function pinonion_update_pin( WP_REST_Request $req ) {
     }
     if ( $description !== null && pinonion_is_developer() ) {
         if ( empty( trim( $description ) ) ) {
-            return new WP_Error( 'missing', __( 'Description is required.', 'purepin-review' ), [ 'status' => 400 ] );
+            return new WP_Error( 'missing', __( 'Description is required.', 'pinonion' ), [ 'status' => 400 ] );
         }
         if ( mb_strlen( $description ) > 1000 ) {
-            return new WP_Error( 'too_long', __( 'Failed to save: text is too long (maximum 1000 characters).', 'purepin-review' ), [ 'status' => 400 ] );
+            return new WP_Error( 'too_long', __( 'Failed to save: text is too long (maximum 1000 characters).', 'pinonion' ), [ 'status' => 400 ] );
         }
         $data['description']            = sanitize_textarea_field( $description );
         $data['description_updated_at'] = current_time( 'mysql' );
     }
 
     if ( empty( $data ) ) {
-        return new WP_Error( 'no_data', __( 'No data to update', 'purepin-review' ), [ 'status' => 400 ] );
+        return new WP_Error( 'no_data', __( 'No data to update', 'pinonion' ), [ 'status' => 400 ] );
     }
 
     // Old values for the event log
@@ -308,7 +308,7 @@ function pinonion_get_comments( WP_REST_Request $req ) {
     if ( ! pinonion_is_developer() ) {
         $pin_owner = (int) $wpdb->get_var( $wpdb->prepare( "SELECT author_wp_id FROM {$wpdb->prefix}pinonion_pins WHERE id = %d", $pin_id ) );
         if ( $pin_owner !== get_current_user_id() ) {
-            return new WP_Error( 'forbidden', __( 'You do not have permission to access this pin.', 'purepin-review' ), [ 'status' => 403 ] );
+            return new WP_Error( 'forbidden', __( 'You do not have permission to access this pin.', 'pinonion' ), [ 'status' => 403 ] );
         }
     }
 
@@ -331,16 +331,16 @@ function pinonion_add_comment( WP_REST_Request $req ) {
     if ( ! pinonion_is_developer() ) {
         $pin_owner = (int) $wpdb->get_var( $wpdb->prepare( "SELECT author_wp_id FROM {$wpdb->prefix}pinonion_pins WHERE id = %d", $pin_id ) );
         if ( $pin_owner !== $author_wpid ) {
-            return new WP_Error( 'forbidden', __( 'You do not have permission to access this pin.', 'purepin-review' ), [ 'status' => 403 ] );
+            return new WP_Error( 'forbidden', __( 'You do not have permission to access this pin.', 'pinonion' ), [ 'status' => 403 ] );
         }
     }
 
     if ( ! $content ) {
-        return new WP_Error( 'missing', __( 'Missing required fields', 'purepin-review' ), [ 'status' => 400 ] );
+        return new WP_Error( 'missing', __( 'Missing required fields', 'pinonion' ), [ 'status' => 400 ] );
     }
 
     if ( mb_strlen( $content ) > 1000 ) {
-        return new WP_Error( 'too_long', __( 'Failed to save: text is too long (maximum 1000 characters).', 'purepin-review' ), [ 'status' => 400 ] );
+        return new WP_Error( 'too_long', __( 'Failed to save: text is too long (maximum 1000 characters).', 'pinonion' ), [ 'status' => 400 ] );
     }
 
     $now = current_time( 'mysql' );
@@ -356,7 +356,7 @@ function pinonion_add_comment( WP_REST_Request $req ) {
     ] );
 
     if ( ! $inserted ) {
-        return new WP_Error( 'db_error', __( 'Database error.', 'purepin-review' ), [ 'status' => 500 ] );
+        return new WP_Error( 'db_error', __( 'Database error.', 'pinonion' ), [ 'status' => 500 ] );
     }
 
     // Also update the pin's updated_at

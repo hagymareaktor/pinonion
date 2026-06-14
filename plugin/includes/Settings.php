@@ -87,7 +87,7 @@ add_action( 'admin_menu', 'pinonion_admin_menu' );
 
 function pinonion_admin_menu() {
     add_options_page(
-        __( 'PinOnion Settings', 'purepin-review' ),
+        __( 'PinOnion Settings', 'pinonion' ),
         'PinOnion',
         'manage_options',
         'pinonion',
@@ -165,14 +165,14 @@ function pinonion_settings_page() {
     $active = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'permissions';
 
     $tabs = [
-        'permissions' => [ 'label' => __( 'Roles & Permissions', 'purepin-review' ) ],
-        'appearance'  => [ 'label' => __( 'Appearance', 'purepin-review' ) ],
-        'advanced'    => [ 'label' => __( 'Advanced', 'purepin-review' ) ],
+        'permissions' => [ 'label' => __( 'Roles & Permissions', 'pinonion' ) ],
+        'appearance'  => [ 'label' => __( 'Appearance', 'pinonion' ) ],
+        'advanced'    => [ 'label' => __( 'Advanced', 'pinonion' ) ],
     ];
     ?>
     <div class="wrap" id="pp-settings-wrap">
         <h1 style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-            <span>PinOnion <span style="font-weight:400;color:#999;font-size:18px"><?php esc_html_e( '— settings', 'purepin-review' ); ?></span></span>
+            <span>PinOnion <span style="font-weight:400;color:#999;font-size:18px"><?php esc_html_e( '— settings', 'pinonion' ); ?></span></span>
         </h1>
 
         <nav class="pp-tabs">
@@ -192,52 +192,52 @@ function pinonion_settings_page() {
             <?php /* ── TAB: PERMISSIONS ── */ ?>
             <div class="pp-tab-pane <?php echo $active === 'permissions' ? 'active' : ''; ?>">
                 <div class="pp-card">
-                    <h3><?php esc_html_e( 'Developer Roles', 'purepin-review' ); ?></h3>
+                    <h3><?php esc_html_e( 'Developer Roles', 'pinonion' ); ?></h3>
                     <div class="pp-field">
                         <?php
                         pinonion_field_roles( 'developer_roles',
-                            __( 'Users with these roles can view all pins across the site, change any pin\'s status, delete pins, and manage comments. (Typically Administrator, Editor, etc.)', 'purepin-review' )
+                            __( 'Users with these roles can view all pins across the site, change any pin\'s status, delete pins, and manage comments. (Typically Administrator, Editor, etc.)', 'pinonion' )
                         );
                         ?>
                     </div>
                 </div>
                 <div class="pp-card">
-                    <h3><?php esc_html_e( 'Client / Customer Roles', 'purepin-review' ); ?></h3>
+                    <h3><?php esc_html_e( 'Client / Customer Roles', 'pinonion' ); ?></h3>
                     <div class="pp-field">
                         <?php
                         pinonion_field_roles( 'client_roles',
-                            __( 'Users with these roles can use the PinOnion tool to drop pins and add comments, but they will <strong>only see their own pins</strong>. (Typically Subscriber, Customer, etc.)', 'purepin-review' )
+                            __( 'Users with these roles can use the PinOnion tool to drop pins and add comments, but they will <strong>only see their own pins</strong>. (Typically Subscriber, Customer, etc.)', 'pinonion' )
                         );
                         ?>
                     </div>
                 </div>
                 <div class="pp-card">
-                    <h3><?php esc_html_e( 'Client Capabilities', 'purepin-review' ); ?></h3>
+                    <h3><?php esc_html_e( 'Client Capabilities', 'pinonion' ); ?></h3>
                     <div class="pp-field">
                         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
                             <input type="checkbox" name="pinonion_settings[client_can_close]" value="1"<?php checked( '1', pinonion_opt('client_can_close') ); ?> style="margin-top:3px">
                             <span>
-                                <strong><?php esc_html_e( 'Allow clients to close/resolve their own pins', 'purepin-review' ); ?></strong><br>
-                                <span class="description"><?php esc_html_e( 'If unchecked, only Developers can change pin status to Done.', 'purepin-review' ); ?></span>
+                                <strong><?php esc_html_e( 'Allow clients to close/resolve their own pins', 'pinonion' ); ?></strong><br>
+                                <span class="description"><?php esc_html_e( 'If unchecked, only Developers can change pin status to Done.', 'pinonion' ); ?></span>
                             </span>
                         </label>
                     </div>
                     <div class="pp-field" style="margin-top:10px; padding: 12px; background: #fffbe5; border-left: 4px solid #ffb900;">
-                        <span class="description"><strong><?php esc_html_e( 'Note:', 'purepin-review' ); ?></strong> <?php esc_html_e( 'If a user does not have any of the Developer or Client roles selected above, the PinOnion UI will simply not load for them.', 'purepin-review' ); ?></span>
+                        <span class="description"><strong><?php esc_html_e( 'Note:', 'pinonion' ); ?></strong> <?php esc_html_e( 'If a user does not have any of the Developer or Client roles selected above, the PinOnion UI will simply not load for them.', 'pinonion' ); ?></span>
                     </div>
                 </div>
-                <div class="pp-save"><?php submit_button( __( 'Save', 'purepin-review' ), 'primary', 'submit', false ); ?></div>
+                <div class="pp-save"><?php submit_button( __( 'Save', 'pinonion' ), 'primary', 'submit', false ); ?></div>
             </div>
 
             <?php /* ── TAB: APPEARANCE ── */ ?>
             <div class="pp-tab-pane <?php echo $active === 'appearance' ? 'active' : ''; ?>">
                 <div class="pp-card">
-                    <h3><?php esc_html_e( 'FAB Button Position', 'purepin-review' ); ?></h3>
+                    <h3><?php esc_html_e( 'FAB Button Position', 'pinonion' ); ?></h3>
                     <div class="pp-field">
                         <div class="pp-radio-group">
                             <?php foreach ( [
-                                'right' => [ 'label' => __( 'Right side', 'purepin-review' ), 'desc' => __( 'The feedback button appears in the bottom-right corner of the screen (default).', 'purepin-review' ) ],
-                                'left'  => [ 'label' => __( 'Left side', 'purepin-review' ), 'desc' => __( 'The feedback button appears in the bottom-left corner of the screen.', 'purepin-review' ) ],
+                                'right' => [ 'label' => __( 'Right side', 'pinonion' ), 'desc' => __( 'The feedback button appears in the bottom-right corner of the screen (default).', 'pinonion' ) ],
+                                'left'  => [ 'label' => __( 'Left side', 'pinonion' ), 'desc' => __( 'The feedback button appears in the bottom-left corner of the screen.', 'pinonion' ) ],
                             ] as $val => $opt ) :
                                 $sel = pinonion_opt('fab_position') === $val ? ' selected' : '';
                             ?>
@@ -249,30 +249,30 @@ function pinonion_settings_page() {
                         </div>
                     </div>
                 </div>
-                <div class="pp-save"><?php submit_button( __( 'Save', 'purepin-review' ), 'primary', 'submit', false ); ?></div>
+                <div class="pp-save"><?php submit_button( __( 'Save', 'pinonion' ), 'primary', 'submit', false ); ?></div>
             </div>
 
             <?php /* ── TAB: ADVANCED ── */ ?>
             <div class="pp-tab-pane <?php echo $active === 'advanced' ? 'active' : ''; ?>">
                 <div class="pp-card">
-                    <h3><?php esc_html_e( 'Uninstall', 'purepin-review' ); ?></h3>
+                    <h3><?php esc_html_e( 'Uninstall', 'pinonion' ); ?></h3>
                     <div class="pp-field">
                         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
                             <input type="checkbox" name="pinonion_settings[uninstall_data]" value="1"<?php checked( '1', pinonion_opt('uninstall_data') ); ?> style="margin-top:3px">
                             <span>
-                                <strong style="color:#d63638"><?php esc_html_e( 'Delete data on uninstall', 'purepin-review' ); ?></strong><br>
-                                <span class="description"><?php esc_html_e( 'If checked, all pins, comments, and settings will be permanently deleted when the plugin is uninstalled.', 'purepin-review' ); ?></span>
+                                <strong style="color:#d63638"><?php esc_html_e( 'Delete data on uninstall', 'pinonion' ); ?></strong><br>
+                                <span class="description"><?php esc_html_e( 'If checked, all pins, comments, and settings will be permanently deleted when the plugin is uninstalled.', 'pinonion' ); ?></span>
                             </span>
                         </label>
                     </div>
                 </div>
                 <div class="pp-card">
-                    <h3><?php esc_html_e( 'Plugin Version', 'purepin-review' ); ?></h3>
+                    <h3><?php esc_html_e( 'Plugin Version', 'pinonion' ); ?></h3>
                     <div class="pp-field">
                         <p style="margin:0;color:#666;font-size:13px">PinOnion <strong><?php echo esc_html( PINONION_VERSION ); ?></strong></p>
                     </div>
                 </div>
-                <div class="pp-save"><?php submit_button( __( 'Save', 'purepin-review' ), 'primary', 'submit', false ); ?></div>
+                <div class="pp-save"><?php submit_button( __( 'Save', 'pinonion' ), 'primary', 'submit', false ); ?></div>
             </div>
 
         </form>
