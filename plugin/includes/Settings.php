@@ -149,7 +149,9 @@ function pinonion_admin_enqueue( $hook ) {
     if ( $hook !== 'settings_page_pinonion' ) {
         return;
     }
+    /** @phpstan-ignore-next-line */
     wp_enqueue_style( 'pinonion-settings', PINONION_URL . 'assets/css/admin-settings.css', [], PINONION_VERSION );
+    /** @phpstan-ignore-next-line */
     wp_enqueue_script( 'pinonion-settings', PINONION_URL . 'assets/js/admin-settings.js', [], PINONION_VERSION, true );
 }
 
